@@ -1,0 +1,4 @@
+@echo off
+cd "C:\Users\riddh\omnibot-final\omnibot-backend"
+mvnw spring-boot:run
+pause
