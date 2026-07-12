@@ -379,7 +379,20 @@
 <script>
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASS_RE  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,64}$/;
-const API_BASE = 'http://localhost:8080/api';
+// Relative path — served by the same Spring Boot app, works on any host.
+const API_BASE = '/api';
+
+// If already signed in with a non-expired token, skip straight to the dashboard.
+(function redirectIfAuthenticated() {
+  const t = localStorage.getItem('omnibot_token');
+  if (!t) return;
+  try {
+    const p = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!p.exp || p.exp * 1000 > Date.now() + 10000) {
+      window.location.href = '/dashboard.html';
+    }
+  } catch (e) { /* malformed token — stay on login */ }
+})();
 
 function switchTab(tab) {
   document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
@@ -440,7 +453,7 @@ async function handleLogin(e) {
     if (res.ok) {
       localStorage.setItem('omnibot_token', data.accessToken);
       document.getElementById('loginSuccess').classList.add('show');
-      setTimeout(() => { window.location.href = 'http://localhost:8080/dashboard.html'; }, 1500);
+      setTimeout(() => { window.location.href = '/dashboard.html'; }, 800);
     } else {
       showErr('loginPassErr', true);
       document.getElementById('loginPassErr').textContent = data.message || 'Invalid credentials.';
