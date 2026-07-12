@@ -79,6 +79,20 @@ CREATE TABLE IF NOT EXISTS saved_routes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ------------------------------------------------------------
+-- saved_addresses — favourite delivery addresses for food/grocery orders
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS saved_addresses (
+    id             BIGINT      NOT NULL AUTO_INCREMENT,
+    user_id        BIGINT      NOT NULL,
+    address        VARCHAR(255) NOT NULL,
+    preferred_app  VARCHAR(30),
+    created_at     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_sa_user (user_id),
+    CONSTRAINT fk_sa_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ------------------------------------------------------------
 -- connected_services — links to third-party accounts (future real APIs)
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS connected_services (

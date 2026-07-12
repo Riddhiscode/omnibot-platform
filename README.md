@@ -11,7 +11,7 @@ An AI-powered chatbot that unifies food delivery, e-commerce, and urban transpor
 |---|---|---|
 | 1 | User Auth (Register, Login, JWT, MySQL) | ✅ Done |
 | 2 | Chatbot core — intent detection, mock APIs | ✅ Done |
-| 2.5 | Guided multi-step booking flow (cab: source → destination → time → preference) | ✅ Done |
+| 2.5 | Guided multi-step booking flows (transport + food) | ✅ Done |
 | 3 | Real API integrations (Zomato/Swiggy/Uber/Ola partnerships) | 📅 Planned |
 | 4 | React + Material-UI frontend | 📅 Planned |
 | 5 | AWS/Azure deployment | 📅 Planned |
@@ -144,14 +144,26 @@ http://localhost:8080/api/login.html
 ## How the chatbot works
 
 1. **Intent detection** (`IntentDetector`) — keyword-based classifier maps a message to `FOOD_ORDER`, `TRANSPORT_BOOK`, `SHOPPING_ORDER`, `TRACK_ORDER`, `COMPARE`, `GREETING`, `HELP`, or `UNKNOWN`.
-2. **Simple intents** (food/shopping/help/etc.) get an immediate reply + mock service cards from `MockServiceAdapter`.
-3. **Booking intents** (transport) trigger a guided multi-turn flow via `ConversationFlowService`:
+2. **Simple intents** (shopping/help/etc.) get an immediate reply + mock service cards from `MockServiceAdapter`.
+3. **Booking intents** (transport, food) trigger a guided multi-turn flow via `ConversationFlowService`:
+
+   **Transport (`TRANSPORT_BOOK`)**
    - "Where are you right now?" (source)
    - "Where would you like to go?" (destination)
    - "When do you need the ride?" (time)
-   - "Want me to save this route?" (yes/no)
+   - "Want me to save this route?" (yes/no → `saved_routes`)
    - "Do you have a preferred app?" (Uber/Ola/Rapido/Yulu)
-   - Then shows a booking summary + service cards, with the preferred app sorted first.
+   - Booking summary + service cards, preferred app sorted first.
+
+   **Food (`FOOD_ORDER`)**
+   - "What are you in the mood for?" (cuisine)
+   - "Any specific items?" (or "surprise me")
+   - "Where should this be delivered?" (address)
+   - "When do you want it delivered?" (time)
+   - "Save this address for next time?" (yes/no → `saved_addresses`)
+   - "Do you have a preferred app?" (Zomato/Swiggy/Blinkit/Zepto)
+   - Order summary + service cards, preferred app sorted first.
+
 4. All turns are persisted to `chat_messages`; in-progress flows live in `conversation_states` until completed.
 
 ---
