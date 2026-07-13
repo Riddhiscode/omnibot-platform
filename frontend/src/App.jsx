@@ -1,34 +1,50 @@
-import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import ChatEngine from './components/ChatEngine';
 import ContextPanel from './components/ContextPanel';
 import Landing from './components/Landing';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
+import AuthPage from './components/AuthPage';
 
 function App() {
   const [activeTab, setActiveTab] = useState('chat');
   const [hasStarted, setHasStarted] = useState(false);
+  const [auth, setAuth] = useState(null);
+
+  const handleLogin = (user, token) => {
+    setAuth({ token, user });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setAuth(null);
+    setHasStarted(false);
+    setActiveTab('chat');
+  };
+
+  if (!auth) {
+    return (
+      <div className="flex h-screen bg-surface-muted overflow-hidden">
+        <AuthPage onLogin={handleLogin} />
+      </div>
+    );
+  }
 
   if (!hasStarted) {
     return (
       <div className="flex h-screen bg-surface-muted overflow-hidden">
-        <Landing onStart={() => setHasStarted(true)} />
+        <Landing onStart={() => setHasStarted(true)} user={auth.user} onLogout={handleLogout} />
       </div>
     );
   }
 
   return (
     <div className="flex h-screen bg-surface-muted overflow-hidden">
-      {/* Left Navigation Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      
-      {/* Main Interface Area */}
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={auth.user} onLogout={handleLogout} />
       <main className="flex-grow flex flex-col h-full bg-white shadow-neomorphic z-10 m-2 rounded-2xl overflow-hidden relative">
         {activeTab === 'analytics' ? <AnalyticsDashboard /> : <ChatEngine />}
       </main>
-
-      {/* Right Contextual Dashboard Panel (Hidden on mobile, slides up as bottom sheet in future) */}
       <aside className="hidden lg:flex w-96 flex-col bg-surface h-full shadow-sm m-2 ml-0 rounded-2xl overflow-hidden">
         <ContextPanel />
       </aside>

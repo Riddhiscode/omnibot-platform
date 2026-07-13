@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, MessageSquare, History, Wallet, User, Settings, Compass } from 'lucide-react';
+import { Home, MessageSquare, History, Wallet, User, Settings, Compass, LogOut } from 'lucide-react';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
+const Sidebar = ({ activeTab, setActiveTab, user, onLogout }) => {
   const menuItems = [
     { id: 'chat', icon: MessageSquare, label: 'Smart Assistant' },
     { id: 'history', icon: History, label: 'Order History' },
@@ -47,12 +47,19 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       <div className="p-4 border-t border-gray-100">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-accent flex items-center justify-center text-white font-bold shadow-md">
-            R
+            {user?.fullName?.charAt(0) || 'U'}
           </div>
           <div className="hidden lg:block flex-grow overflow-hidden">
-            <h4 className="text-sm font-bold text-gray-800 truncate">Riddhi</h4>
-            <p className="text-xs text-gray-500 truncate">Premium Member</p>
+            <h4 className="text-sm font-bold text-gray-800 truncate">{user?.fullName || 'User'}</h4>
+            <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
           </div>
+          <button
+            onClick={onLogout}
+            className="hidden lg:block p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+            title="Sign out"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
     </aside>

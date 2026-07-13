@@ -16,11 +16,13 @@ const categoryData = [
   { name: 'Grocery', value: 20, color: '#10b981' },
 ];
 
-const AnalyticsDashboard = () => {
+const AnalyticsDashboard = ({ token }) => {
 
   const handleExport = async (format) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/v1/export/${format}?userId=1`);
+      const response = await fetch(`http://localhost:8080/api/v1/export/${format}?userId=1`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');

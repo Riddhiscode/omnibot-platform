@@ -20,7 +20,7 @@ public class VendorSearchRequest {
     private Double minRating;
     private Map<String, String> filters;
 
-    public VendorSearchRequest() {}
+    public VendorSearchRequest() { this.maxResults = 10; }
 
     public VendorSearchRequest(String query, String location) {
         this.query = query;
