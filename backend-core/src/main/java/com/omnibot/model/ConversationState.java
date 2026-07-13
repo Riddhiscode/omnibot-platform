@@ -25,11 +25,11 @@ public class ConversationState {
     private Long userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "flow_type", nullable = false, length = 20)
+    @Column(name = "flow_type", nullable = false, columnDefinition = "VARCHAR(30)")
     private FlowType flowType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "current_step", nullable = false, length = 20)
+    @Column(name = "current_step", nullable = false, columnDefinition = "VARCHAR(30)")
     private Step currentStep;
 
     // JSON-encoded collected answers: {"source":"...","destination":"...", ...}

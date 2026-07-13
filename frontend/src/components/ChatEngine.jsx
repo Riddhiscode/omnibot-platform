@@ -61,22 +61,44 @@ const ChatEngine = () => {
       setMessages(prev => [...prev, botReply]);
 
       if (data.services && data.services.length > 0) {
-        // Map backend ServiceCard to frontend deal_card options
-        const options = data.services.map((svc, idx) => ({
-          id: String(idx),
-          vendor: svc.vendorName,
-          price: svc.price,
-          eta: svc.eta,
-          isCheapest: idx === 0, // Mock logic assuming sorted
-          isFastest: svc.eta && svc.eta.includes('5') // Mock logic
-        }));
+        const prices = data.services.map(s => parseFloat(String(s.price).replace(/[^0-9.]/g, '')) || 0);
+        const etas = data.services.map(s => {
+          const match = String(s.estimate || '').match(/(\d+)/);
+          return match ? parseInt(match[1]) : 999;
+        });
+        const minPrice = Math.min(...prices);
+        const minEta = Math.min(...etas);
+
+        const options = data.services.map((svc, idx) => {
+          const price = prices[idx];
+          const eta = etas[idx];
+          return {
+            id: String(idx),
+            vendor: svc.name,
+            price: price,
+            eta: svc.estimate,
+            rating: svc.rating,
+            action: svc.action,
+            isCheapest: price === minPrice,
+            isFastest: eta === minEta
+          };
+        });
+        
+        const categoryMap = {
+          'FOOD_ORDER': 'Food Delivery',
+          'TRANSPORT_BOOK': 'Ride Booking',
+          'SHOPPING_ORDER': 'Shopping',
+          'GROCERY_ORDER': 'Grocery',
+          'COMPARE': 'Comparison',
+          'MULTI_INTENT_RIDE_FOOD': 'Combo'
+        };
         
         const dealCard = {
           id: Date.now() + 2,
           role: 'bot',
           type: 'deal_card',
           data: {
-            category: data.intent.includes('TRANSPORT') ? 'Transport' : 'Food/Shopping',
+            category: categoryMap[data.intent] || data.intent || 'Options',
             options: options
           },
           timestamp: new Date().toISOString()
@@ -161,13 +183,14 @@ const ChatEngine = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-bold text-gray-800">{opt.vendor}</h4>
-                            {opt.isCheapest && <span className="bg-accent/10 text-accent text-[10px] px-2 py-0.5 rounded-full font-bold">Cheapest</span>}
+                            {opt.isCheapest && <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Cheapest</span>}
                             {opt.isFastest && <span className="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full font-bold">Fastest</span>}
+                            {opt.rating && <span className="text-[10px] text-gray-400">★ {parseFloat(opt.rating).toFixed(1)}</span>}
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">{opt.eta} away</p>
+                          <p className="text-xs text-gray-500 mt-1">{opt.eta}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="font-bold text-lg">${opt.price.toFixed(2)}</span>
+                          <span className="font-bold text-lg">{typeof opt.price === 'number' ? `₹${opt.price.toFixed(0)}` : opt.price}</span>
                           <button 
                             onClick={() => handlePlaceOrder(opt.vendor, opt.price)}
                             className="bg-brand text-white p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"

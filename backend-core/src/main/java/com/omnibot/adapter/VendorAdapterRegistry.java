@@ -27,13 +27,15 @@ public class VendorAdapterRegistry {
     public void register(VendorAdapter adapter) {
         String key = adapterKey(adapter.getVendorName(), adapter.getCategory());
         adaptersByName.put(key.toLowerCase(), adapter);
-        adaptersByCategory.computeIfAbsent(adapter.getCategory(), k -> new ArrayList<>()).add(adapter);
+        List<VendorAdapter> categoryList = adaptersByCategory.computeIfAbsent(adapter.getCategory(), k -> new ArrayList<>());
+        categoryList.removeIf(a -> a.getVendorName().equalsIgnoreCase(adapter.getVendorName()));
+        categoryList.add(adapter);
         log.info("Registered vendor adapter: {} [{}] — available={}",
                 adapter.getVendorName(), adapter.getCategory(), adapter.isAvailable());
     }
 
     public Optional<VendorAdapter> getAdapter(String vendorName, VendorCategory category) {
-        String key = vendorName.toLowerCase() + ":" + category.name();
+        String key = (vendorName + ":" + category.name()).toLowerCase();
         return Optional.ofNullable(adaptersByName.get(key));
     }
 
@@ -136,7 +138,7 @@ public class VendorAdapterRegistry {
             status.put(cat.name(), vendorList);
         }
         status.put("mode", adaptersByName.values().stream().findFirst()
-                .map(a -> a.getClass().getSimpleName().contains("Mock") ? "mock" : "detected")
+                .map(a -> isMockAdapter(a) ? "mock" : "live")
                 .orElse("unknown"));
         return status;
     }
@@ -155,5 +157,23 @@ public class VendorAdapterRegistry {
 
     private String adapterKey(String vendorName, VendorCategory category) {
         return vendorName.toLowerCase() + ":" + category.name();
+    }
+
+    private boolean isMockAdapter(VendorAdapter adapter) {
+        String className = adapter.getClass().getSimpleName();
+        if (className.contains("Mock") || className.contains("Test")) return true;
+        var props = adapter.getClass().getDeclaredFields();
+        for (var f : props) {
+            if (f.getType().getName().contains("VendorProperties")) {
+                f.setAccessible(true);
+                try {
+                    Object vp = f.get(adapter);
+                    var modeField = vp.getClass().getMethod("getMode");
+                    Object mode = modeField.invoke(vp);
+                    return "mock".equalsIgnoreCase(String.valueOf(mode));
+                } catch (Exception ignored) {}
+            }
+        }
+        return false;
     }
 }

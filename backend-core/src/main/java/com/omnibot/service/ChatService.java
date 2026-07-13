@@ -3,6 +3,10 @@ package com.omnibot.service;
 import com.omnibot.agent.BotReplyEngine;
 import com.omnibot.agent.IntentService;
 import com.omnibot.agent.MockServiceAdapter;
+import com.omnibot.adapter.VendorAdapterRegistry;
+import com.omnibot.adapter.VendorCategory;
+import com.omnibot.adapter.dto.VendorSearchRequest;
+import com.omnibot.adapter.dto.VendorSearchResult;
 import com.omnibot.model.ChatDto.*;
 import com.omnibot.model.ChatMessage;
 import com.omnibot.model.ChatMessage.Intent;
@@ -36,17 +40,20 @@ public class ChatService {
     private final IntentService intentService;
     private final BotReplyEngine botReplyEngine;
     private final MockServiceAdapter mockServiceAdapter;
+    private final VendorAdapterRegistry vendorRegistry;
     private final ChatMessageRepository chatRepo;
     private final ConversationFlowService flowService;
 
     public ChatService(IntentService intentService,
                        BotReplyEngine botReplyEngine,
                        MockServiceAdapter mockServiceAdapter,
+                       VendorAdapterRegistry vendorRegistry,
                        ChatMessageRepository chatRepo,
                        ConversationFlowService flowService) {
         this.intentService = intentService;
         this.botReplyEngine = botReplyEngine;
         this.mockServiceAdapter = mockServiceAdapter;
+        this.vendorRegistry = vendorRegistry;
         this.chatRepo = chatRepo;
         this.flowService = flowService;
     }
@@ -104,7 +111,7 @@ public class ChatService {
         if (intent == Intent.GROCERY_ORDER || intent == Intent.SHOPPING_ORDER
                 || intent == Intent.MULTI_INTENT_RIDE_FOOD || intent == Intent.COMPARE) {
             String reply = botReplyEngine.generateReply(intent, userMsg);
-            List<ServiceCard> cards = mockServiceAdapter.getCards(intent, userMsg);
+            List<ServiceCard> cards = getVendorCards(intent, userMsg);
             persistTurn(userId, sessionId, userMsg, reply, intent);
             ChatResponse response = new ChatResponse();
             response.setSessionId(sessionId);
@@ -118,8 +125,8 @@ public class ChatService {
         // 2. Generate reply
         String reply = botReplyEngine.generateReply(intent, userMsg);
 
-        // 3. Get service cards
-        List<ServiceCard> cards = mockServiceAdapter.getCards(intent, userMsg);
+        // 3. Get service cards from vendor adapters
+        List<ServiceCard> cards = getVendorCards(intent, userMsg);
 
         // 4-5. Persist messages
         persistTurn(userId, sessionId, userMsg, reply, intent);
@@ -162,5 +169,56 @@ public class ChatService {
                         m.getIntent() != null ? m.getIntent().name() : null,
                         m.getCreatedAt()))
                 .collect(Collectors.toList());
+    }
+
+    private List<ServiceCard> getVendorCards(Intent intent, String userMessage) {
+        VendorCategory category = switch (intent) {
+            case FOOD_ORDER -> VendorCategory.FOOD;
+            case SHOPPING_ORDER -> VendorCategory.SHOPPING;
+            case TRANSPORT_BOOK -> VendorCategory.TRANSPORT;
+            case GROCERY_ORDER -> VendorCategory.GROCERY;
+            default -> resolveCategoryFromMessage(userMessage);
+        };
+
+        if (category != null) {
+            VendorSearchRequest searchReq = new VendorSearchRequest(userMessage, userMessage);
+            List<VendorSearchResult> results = vendorRegistry.searchAll(category, searchReq);
+            if (!results.isEmpty()) {
+                return results.stream()
+                        .map(r -> new ServiceCard(
+                                r.getVendorName(),
+                                "vendor",
+                                category == VendorCategory.FOOD ? "ORDER_FOOD"
+                                        : category == VendorCategory.TRANSPORT ? "BOOK_RIDE"
+                                        : "BUY_NOW",
+                                r.getEtaLabel() != null ? r.getEtaLabel() : r.getEtaMinutes() + " mins",
+                                r.getPrice() + " " + r.getCurrency(),
+                                String.valueOf(r.getRating())))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        return mockServiceAdapter.getCards(intent, userMessage);
+    }
+
+    private VendorCategory resolveCategoryFromMessage(String msg) {
+        if (msg == null) return null;
+        String lower = msg.toLowerCase();
+        if (containsAny(lower, "ride", "cab", "uber", "ola", "lyft", "bolt", "bike", "auto", "rapido", "yulu"))
+            return VendorCategory.TRANSPORT;
+        if (containsAny(lower, "food", "eat", "biryani", "pizza", "burger", "restaurant", "zomato", "swiggy"))
+            return VendorCategory.FOOD;
+        if (containsAny(lower, "buy", "shop", "product", "laptop", "phone", "amazon", "flipkart"))
+            return VendorCategory.SHOPPING;
+        if (containsAny(lower, "grocery", "vegetable", "milk", "bread"))
+            return VendorCategory.GROCERY;
+        return null;
+    }
+
+    private boolean containsAny(String text, String... keywords) {
+        for (String kw : keywords) {
+            if (text.contains(kw)) return true;
+        }
+        return false;
     }
 }
