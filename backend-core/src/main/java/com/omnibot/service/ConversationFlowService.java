@@ -184,8 +184,25 @@ public class ConversationFlowService {
                         data.get("time"), preference);
 
                 List<ServiceCard> cards = mockServiceAdapter.getTransportCards(preference);
-                stateRepo.deleteBySessionId(sessionId);
+                state.setCurrentStep(Step.AWAIT_SELECTION);
+                saveState(state, data);
                 return buildResponse(sessionId, summary, "TRANSPORT_BOOK", cards);
+            }
+
+            case AWAIT_SELECTION -> {
+                String vendor = extractSelectedVendor(answer, MockServiceAdapter.TRANSPORT_VENDORS);
+                if (vendor != null) {
+                    String confirm = "✅ Booking confirmed with **" + vendor + "**!\n\n"
+                            + "📍 From: " + data.get("source") + "\n"
+                            + "🎯 To: " + data.get("destination") + "\n"
+                            + "⏰ Time: " + data.get("time") + "\n\n"
+                            + "Your driver is on the way. You'll receive a confirmation shortly.\n"
+                            + "Is there anything else I can help with?";
+                    stateRepo.deleteBySessionId(sessionId);
+                    return buildResponse(sessionId, confirm, "TRANSPORT_BOOK", null);
+                }
+                stateRepo.deleteBySessionId(sessionId);
+                return buildResponse(sessionId, "Let's start over — what would you like to do?", "UNKNOWN", null);
             }
 
             default -> {
@@ -265,8 +282,25 @@ public class ConversationFlowService {
                         data.get("address"), data.get("time"), preference);
 
                 List<ServiceCard> cards = mockServiceAdapter.getFoodCards(preference);
-                stateRepo.deleteBySessionId(sessionId);
+                state.setCurrentStep(Step.AWAIT_FOOD_SELECTION);
+                saveState(state, data);
                 return buildResponse(sessionId, summary, "FOOD_ORDER", cards);
+            }
+
+            case AWAIT_FOOD_SELECTION -> {
+                String vendor = extractSelectedVendor(answer, MockServiceAdapter.FOOD_VENDORS);
+                if (vendor != null) {
+                    String confirm = "✅ Order placed with **" + vendor + "**!\n\n"
+                            + "🍽️ Cuisine: " + data.get("cuisine") + "\n"
+                            + "📍 Deliver to: " + data.get("address") + "\n"
+                            + "⏰ Time: " + data.get("time") + "\n\n"
+                            + "Your order is being prepared. You'll get updates shortly.\n"
+                            + "Is there anything else I can help with?";
+                    stateRepo.deleteBySessionId(sessionId);
+                    return buildResponse(sessionId, confirm, "FOOD_ORDER", null);
+                }
+                stateRepo.deleteBySessionId(sessionId);
+                return buildResponse(sessionId, "Let's start over — what would you like to do?", "UNKNOWN", null);
             }
 
             default -> {
@@ -288,6 +322,28 @@ public class ConversationFlowService {
     private boolean isSkip(String answer) {
         String a = answer.trim().toLowerCase();
         return a.isBlank() || a.contains("surprise") || a.contains("anything") || a.contains("popular");
+    }
+
+    private String extractSelectedVendor(String answer, List<String> validApps) {
+        String a = answer.trim().toLowerCase();
+        if (a.contains("no") || a.isBlank()) return null;
+        for (String app : validApps) {
+            if (a.contains(app.toLowerCase())) return app;
+        }
+        if (a.contains("uber") && a.contains("eat")) return "UberEats";
+        if (a.contains("uber")) return "Uber";
+        if (a.contains("bolt")) return "Bolt";
+        if (a.contains("ola")) return "Ola";
+        if (a.contains("lyft")) return "Lyft";
+        if (a.contains("rapido")) return "Rapido";
+        if (a.contains("yulu")) return "Yulu";
+        if (a.contains("zomato")) return "Zomato";
+        if (a.contains("swiggy")) return "Swiggy";
+        if (a.contains("doordash")) return "DoorDash";
+        if (a.contains("select") || a.contains("want") || a.contains("use") || a.contains("book")) {
+            return "No preference";
+        }
+        return null;
     }
 
     private String normaliseAppPreference(String answer, List<String> validApps) {

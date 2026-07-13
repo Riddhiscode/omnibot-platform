@@ -45,10 +45,10 @@ public class ConversationState {
     public enum Step {
         // Transport flow
         ASK_SOURCE, ASK_DESTINATION, ASK_TIME,
-        ASK_SAVE_ROUTE, ASK_PREFERENCE, DONE,
+        ASK_SAVE_ROUTE, ASK_PREFERENCE, AWAIT_SELECTION,
         // Food flow
         ASK_CUISINE, ASK_ITEMS, ASK_ADDRESS,
-        ASK_DELIVERY_TIME, ASK_SAVE_ADDRESS, ASK_FOOD_PREFERENCE
+        ASK_DELIVERY_TIME, ASK_SAVE_ADDRESS, ASK_FOOD_PREFERENCE, AWAIT_FOOD_SELECTION
     }
 
     public Long getId() { return id; }
