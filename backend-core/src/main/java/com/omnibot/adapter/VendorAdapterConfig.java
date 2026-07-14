@@ -3,7 +3,9 @@ package com.omnibot.adapter;
 import com.omnibot.adapter.food.*;
 import com.omnibot.adapter.transport.*;
 import com.omnibot.adapter.shopping.*;
+import com.omnibot.adapter.grocery.*;
 import com.omnibot.config.VendorProperties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -136,6 +138,24 @@ public class VendorAdapterConfig {
     @Bean
     public EbayAdapter ebayAdapter(VendorProperties props, VendorAdapterRegistry registry) {
         EbayAdapter adapter = new EbayAdapter(props);
+        registry.register(adapter);
+        return adapter;
+    }
+
+    // ============================================================
+    // GROCERY ADAPTERS (Phase 3)
+    // ============================================================
+
+    @Bean
+    public BigBasketAdapter bigBasketAdapter(VendorProperties props, VendorAdapterRegistry registry) {
+        BigBasketAdapter adapter = new BigBasketAdapter(props);
+        registry.register(adapter);
+        return adapter;
+    }
+
+    @Bean
+    public JioMartAdapter jioMartAdapter(VendorProperties props, VendorAdapterRegistry registry) {
+        JioMartAdapter adapter = new JioMartAdapter(props);
         registry.register(adapter);
         return adapter;
     }

@@ -47,6 +47,10 @@ public class VendorProperties {
     private VendorKey myntra = new VendorKey();
     private VendorKey ebay = new VendorKey();
 
+    // Grocery vendor keys (Phase 3)
+    private VendorKey bigbasket = new VendorKey();
+    private VendorKey jiomart  = new VendorKey();
+
     public String getMode() { return mode; }
     public void setMode(String mode) { this.mode = mode; }
     public int getTimeoutMs() { return timeoutMs; }
@@ -87,6 +91,12 @@ public class VendorProperties {
     public void setMyntra(VendorKey myntra) { this.myntra = myntra; }
     public VendorKey getEbay() { return ebay; }
     public void setEbay(VendorKey ebay) { this.ebay = ebay; }
+
+    // Grocery (Phase 3)
+    public VendorKey getBigbasket() { return bigbasket; }
+    public void setBigbasket(VendorKey bigbasket) { this.bigbasket = bigbasket; }
+    public VendorKey getJiomart() { return jiomart; }
+    public void setJiomart(VendorKey jiomart) { this.jiomart = jiomart; }
 
     /**
      * API key + endpoint config for a single vendor.
