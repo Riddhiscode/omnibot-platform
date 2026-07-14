@@ -5,6 +5,10 @@ import com.omnibot.adapter.VendorAdapterRegistry;
 import com.omnibot.adapter.VendorCategory;
 import com.omnibot.adapter.dto.*;
 import com.omnibot.agent.MockServiceAdapter;
+import com.omnibot.model.Order;
+import com.omnibot.model.PaymentTransaction;
+import com.omnibot.repository.OrderRepository;
+import com.omnibot.repository.PaymentTransactionRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,11 +33,17 @@ public class AggregatorController {
 
     private final MockServiceAdapter mockServiceAdapter;
     private final VendorAdapterRegistry registry;
+    private final OrderRepository orderRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
 
     public AggregatorController(MockServiceAdapter mockServiceAdapter,
-                                VendorAdapterRegistry registry) {
+                                VendorAdapterRegistry registry,
+                                OrderRepository orderRepository,
+                                PaymentTransactionRepository paymentTransactionRepository) {
         this.mockServiceAdapter = mockServiceAdapter;
         this.registry = registry;
+        this.orderRepository = orderRepository;
+        this.paymentTransactionRepository = paymentTransactionRepository;
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -133,6 +143,29 @@ public class AggregatorController {
 
         VendorOrderResult result = registry.placeOrder(vendorName, category, req);
 
+        if (result.isSuccess()) {
+            Order order = new Order();
+            order.setUserId(userId);
+            order.setVendorId(vendorName);
+            order.setCategory(category.name());
+            order.setStatus(category == VendorCategory.TRANSPORT ? "IN_PROGRESS" : "PREPARING");
+            order.setTotalAmount(result.getAmountCharged() != null ? result.getAmountCharged() : req.getAmount());
+            order.setCurrency("INR");
+            order.setExternalOrderId(result.getExternalOrderId() != null ? result.getExternalOrderId() : UUID.randomUUID().toString());
+            order.setTrackingUrl(result.getTrackingUrl() != null ? result.getTrackingUrl() : "https://omnibot.ai/track/" + order.getExternalOrderId());
+            orderRepository.save(order);
+
+            PaymentTransaction tx = new PaymentTransaction();
+            tx.setOrderId(order.getId());
+            tx.setUserId(userId);
+            tx.setAmount(order.getTotalAmount());
+            tx.setCurrency("INR");
+            tx.setStatus("SUCCESS");
+            tx.setPaymentMethod("CREDIT_CARD");
+            tx.setTransactionRef("txn_" + UUID.randomUUID().toString());
+            paymentTransactionRepository.save(tx);
+        }
+
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("success",       result.isSuccess());
         response.put("vendorName",    result.getVendorName());
@@ -141,6 +174,18 @@ public class AggregatorController {
         response.put("amountCharged", result.getAmountCharged());
         response.put("error",         result.getErrorMessage());
 
+        return ResponseEntity.ok(response);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  GET /v1/aggregator/orders?userId=1
+    // ─────────────────────────────────────────────────────────────────────
+    @GetMapping("/orders")
+    public ResponseEntity<Map<String, Object>> getOrders(@RequestParam(defaultValue = "1") Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("userId", userId);
+        response.put("orders", orders);
         return ResponseEntity.ok(response);
     }
 
