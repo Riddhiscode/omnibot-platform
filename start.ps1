@@ -30,6 +30,8 @@ function Start-MySQLIfDown {
         return $true
     }
     Write-Host "[..] Starting MySQL..." -ForegroundColor Yellow
+    $MYSQL_DIR = Split-Path (Split-Path $MYSQL_BIN -Parent) -Parent
+    Remove-Item "$MYSQL_DIR\data\*.pid" -Force -ErrorAction SilentlyContinue
     Start-Process -FilePath $MYSQL_BIN -ArgumentList "--defaults-file=$MYSQL_INI"
     # Wait up to 15 seconds
     for ($i = 1; $i -le 15; $i++) {
