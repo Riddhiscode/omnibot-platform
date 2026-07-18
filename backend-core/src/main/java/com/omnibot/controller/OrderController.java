@@ -8,12 +8,14 @@ import com.omnibot.model.PaymentTransaction;
 import com.omnibot.repository.OrderRepository;
 import com.omnibot.repository.PaymentTransactionRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-@RestController
+@Controller
+@ResponseBody
 @RequestMapping("/v1/orders")
 public class OrderController {
 

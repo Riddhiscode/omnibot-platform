@@ -2,11 +2,13 @@ package com.omnibot.controller;
 
 import com.omnibot.service.ExportService;
 import org.springframework.http.*;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
-@RestController
+@Controller
+@ResponseBody
 @RequestMapping("/v1/export")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost:8080"})
 public class ExportController {

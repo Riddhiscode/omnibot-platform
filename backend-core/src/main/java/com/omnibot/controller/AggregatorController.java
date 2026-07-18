@@ -10,6 +10,7 @@ import com.omnibot.model.PaymentTransaction;
 import com.omnibot.repository.OrderRepository;
 import com.omnibot.repository.PaymentTransactionRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -26,7 +27,8 @@ import java.util.stream.Collectors;
  *   GET  /api/v1/aggregator/track     — track order via registry
  *   GET  /api/v1/aggregator/status    — vendor health status
  */
-@RestController
+@Controller
+@ResponseBody
 @RequestMapping("/v1/aggregator")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost:8080"})
 public class AggregatorController {

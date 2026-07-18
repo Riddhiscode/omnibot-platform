@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniBot Platform - Register</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0B0C10;
+            color: #C5C6C7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .register-container {
+            background-color: #1F2833;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.2);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #45A29E;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #66FCF1;
+            margin: 0;
+            font-size: 28px;
+            text-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
+        }
+        .header p {
+            color: #45A29E;
+            margin-top: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #C5C6C7;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #45A29E;
+            background-color: #0B0C10;
+            color: #FFFFFF;
+            border-radius: 5px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: #66FCF1;
+            box-shadow: 0 0 8px rgba(102, 252, 241, 0.5);
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: transparent;
+            color: #66FCF1;
+            border: 2px solid #66FCF1;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #66FCF1;
+            color: #0B0C10;
+            box-shadow: 0 0 15px rgba(102, 252, 241, 0.8);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #66FCF1;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="header">
+            <h1>OmniBot Platform</h1>
+            <p>Create a New Account</p>
+        </div>
+        <form>
+            <div class="form-group">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" required>
+            </div>
+            <button type="button" class="btn">Register Account</button>
+        </form>
+        <div class="footer">
+            Already have an account? <a href="login.html">Sign In</a>
+        </div>
+    </div>
+</body>
+</html>

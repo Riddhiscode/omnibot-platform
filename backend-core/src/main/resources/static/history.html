@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniBot — Order History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0e14;
+            --surface: #13161f;
+            --surface2: #1a1e2b;
+            --border: rgba(255,255,255,0.08);
+            --accent: #6c63ff;
+            --accent2: #00d4aa;
+            --text: #e8eaf2;
+            --muted: #7c8296;
+            --error: #ff5f5f;
+            --success: #00d4aa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-mark {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-sub {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.75rem;
+            gap: 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .tab.active {
+            color: var(--text);
+            border-bottom-color: var(--accent);
+        }
+
+        input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            font-size: 0.9rem;
+            padding: 0.65rem 0.875rem;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .history-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .history-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .history-date {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .history-amount {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent2);
+            font-weight: 700;
+            text-align: right;
+        }
+        
+        .history-status {
+            font-size: 0.7rem;
+            background: rgba(0,212,170,0.1);
+            color: var(--success);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.25rem;
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">
+        <div class="logo-mark">⬡ OmniBot</div>
+        <div class="logo-sub">Your universal service gateway</div>
+    </div>
+
+    <div class="card">
+        <div class="tabs">
+            <button class="tab" onclick="window.location.href='dashboard.html'">Dashboard</button>
+            <button class="tab active" onclick="window.location.href='history.html'">History</button>
+        </div>
+
+        <input type="text" placeholder="Search orders...">
+
+        <div class="history-list">
+            <div class="history-item">
+                <div class="history-info">
+                    <span class="history-title">🍕 Zomato Delivery</span>
+                    <span class="history-date">Oct 24, 2026</span>
+                </div>
+                <div>
+                    <div class="history-amount">₹ 450.00</div>
+                    <div class="history-status">COMPLETED</div>
+                </div>
+            </div>
+
+            <div class="history-item">
+                <div class="history-info">
+                    <span class="history-title">🚗 Uber Ride</span>
+                    <span class="history-date">Oct 23, 2026</span>
+                </div>
+                <div>
+                    <div class="history-amount">₹ 120.00</div>
+                    <div class="history-status">COMPLETED</div>
+                </div>
+            </div>
+
+            <div class="history-item">
+                <div class="history-info">
+                    <span class="history-title">🛒 BigBasket Grocery</span>
+                    <span class="history-date">Oct 21, 2026</span>
+                </div>
+                <div>
+                    <div class="history-amount">₹ 1240.50</div>
+                    <div class="history-status">COMPLETED</div>
+                </div>
+            </div>
+            
+            <div class="history-item">
+                <div class="history-info">
+                    <span class="history-title">📦 Amazon Shopping</span>
+                    <span class="history-date">Oct 20, 2026</span>
+                </div>
+                <div>
+                    <div class="history-amount">₹ 2999.00</div>
+                    <div class="history-status">COMPLETED</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

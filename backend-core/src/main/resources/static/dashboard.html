@@ -1,560 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OmniBot — Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #06080f; --bg2: #0a0d16;
-  --surface: rgba(255,255,255,0.03); --surface2: rgba(255,255,255,0.06);
-  --surface3: rgba(255,255,255,0.09); --surface4: rgba(255,255,255,0.12);
-  --border: rgba(255,255,255,0.07); --border-focus: rgba(99,102,241,0.5);
-  --accent: #6366f1; --accent2: #22d3ee; --accent3: #a78bfa;
-  --text: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b;
-  --error: #ef4444; --success: #10b981; --warning: #f59e0b;
-  --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniBot — Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0e14;
+            --surface: #13161f;
+            --surface2: #1a1e2b;
+            --border: rgba(255,255,255,0.08);
+            --accent: #6c63ff;
+            --accent2: #00d4aa;
+            --text: #e8eaf2;
+            --muted: #7c8296;
+            --error: #ff5f5f;
+            --success: #00d4aa;
+        }
 
-/* ===== HEADER ===== */
-.header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 1.5rem; height: 56px;
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  flex-shrink: 0; z-index: 10;
-}
-.header-left { display: flex; align-items: center; gap: 1.5rem; }
-.logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
-.logo-icon {
-  width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border-radius: 9px; display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; font-weight: 700; color: white; font-family: 'JetBrains Mono', monospace;
-}
-.logo-text { font-size: 0.95rem; font-weight: 700; letter-spacing: -0.03em; }
-.header-nav { display: flex; gap: 0.25rem; }
-.nav-btn {
-  padding: 0.45rem 0.85rem; border-radius: var(--radius-xs); border: none;
-  background: none; color: var(--text-muted); font-size: 0.78rem; font-weight: 500;
-  cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
-}
-.nav-btn.active, .nav-btn:hover { color: var(--text); background: var(--surface3); }
-.header-right { display: flex; align-items: center; gap: 0.75rem; }
-.header-icon {
-  width: 36px; height: 36px; border-radius: var(--radius-xs); border: 1px solid var(--border);
-  background: var(--surface); display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 0.85rem; color: var(--text-muted); transition: all 0.2s;
-  position: relative;
-}
-.header-icon:hover { border-color: var(--accent); color: var(--text); }
-.badge {
-  position: absolute; top: -4px; right: -4px; width: 16px; height: 16px;
-  background: var(--error); border-radius: 50%; font-size: 0.55rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; color: white;
-}
-.user-pill {
-  display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0.6rem 0.3rem 0.3rem;
-  border-radius: var(--radius-xs); border: 1px solid var(--border); background: var(--surface);
-  cursor: pointer; transition: border-color 0.2s;
-}
-.user-pill:hover { border-color: var(--accent); }
-.user-avatar {
-  width: 30px; height: 30px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.7rem; font-weight: 700; color: white;
-}
-.user-name { font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); }
-.user-role { font-size: 0.65rem; color: var(--text-muted); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ===== QUICK ACTIONS ===== */
-.quick-actions {
-  display: flex; gap: 0.5rem; padding: 0.6rem 1.5rem;
-  background: var(--bg2); border-bottom: 1px solid var(--border);
-  flex-shrink: 0; overflow-x: auto;
-}
-.quick-actions::-webkit-scrollbar { height: 0; }
-.qa-btn {
-  display: flex; align-items: center; gap: 0.45rem; padding: 0.4rem 0.9rem;
-  border-radius: 20px; border: 1px solid var(--border); background: var(--surface);
-  color: var(--text-secondary); font-size: 0.75rem; font-weight: 500;
-  cursor: pointer; white-space: nowrap; font-family: 'Inter', sans-serif;
-  transition: all 0.2s;
-}
-.qa-btn:hover { border-color: var(--accent); color: var(--text); background: var(--surface2); }
-.qa-btn .qa-icon { font-size: 0.9rem; }
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
 
-/* ===== MAIN LAYOUT ===== */
-.main { display: flex; flex: 1; overflow: hidden; }
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
 
-/* ===== CHAT PANEL ===== */
-.chat-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
 
-.messages {
-  flex: 1; overflow-y: auto; padding: 1.5rem 2rem;
-  display: flex; flex-direction: column; gap: 1rem;
-}
-.messages::-webkit-scrollbar { width: 4px; }
-.messages::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
+        .logo-mark {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
 
-/* MESSAGES */
-.msg { display: flex; gap: 0.75rem; max-width: 75%; animation: msgIn 0.3s ease; }
-.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+        .logo-sub {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
 
-@keyframes msgIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
 
-.msg-avatar {
-  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 0.75rem;
-}
-.msg.bot .msg-avatar {
-  background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; font-weight: 700;
-}
-.msg.user .msg-avatar {
-  background: var(--surface3); color: var(--text-secondary); font-weight: 600;
-}
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.75rem;
+            gap: 0;
+        }
 
-.msg-content { min-width: 0; }
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--muted);
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+            font-family: 'Sora', sans-serif;
+        }
 
-.msg-bubble {
-  padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.85rem; line-height: 1.65;
-  word-wrap: break-word;
-}
-.msg.bot .msg-bubble {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-top-left-radius: 4px;
-}
-.msg.user .msg-bubble {
-  background: linear-gradient(135deg, var(--accent), #4f46e5); color: white;
-  border-top-right-radius: 4px;
-}
+        .tab.active {
+            color: var(--text);
+            border-bottom-color: var(--accent);
+        }
 
-.msg-time {
-  font-size: 0.65rem; color: var(--text-muted); margin-top: 0.35rem; padding: 0 0.1rem;
-}
-.msg.user .msg-time { text-align: right; }
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
 
-/* SERVICE CARDS */
-.cards-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.6rem; }
-.svc-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 0.75rem 1rem; min-width: 150px; max-width: 200px; cursor: pointer;
-  transition: all 0.2s;
-}
-.svc-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-.svc-card:active { transform: scale(0.98); }
-.svc-name { font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem; }
-.svc-meta { display: flex; gap: 0.6rem; margin-bottom: 0.2rem; }
-.svc-eta { font-size: 0.7rem; color: var(--accent2); font-weight: 500; }
-.svc-price { font-size: 0.78rem; font-weight: 600; }
-.svc-rating { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-.svc-btn {
-  width: 100%; padding: 0.4rem; border-radius: var(--radius-xs); border: none;
-  background: linear-gradient(135deg, var(--accent), #4f46e5); color: white;
-  font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
-  transition: all 0.2s;
-}
-.svc-btn:hover { opacity: 0.9; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* TYPING INDICATOR */
-.typing { display: none; align-items: center; gap: 0.75rem; padding: 0 2rem; }
-.typing.show { display: flex; }
-.typing-avatar {
-  width: 32px; height: 32px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; font-weight: 700; color: white;
-}
-.typing-dots { display: flex; gap: 4px; padding: 0.6rem 1rem; background: var(--surface2); border-radius: 12px; border: 1px solid var(--border); }
-.typing-dots span {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: bounce 1.2s infinite;
-}
-.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
-.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
-@keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+        .stat-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
 
-/* INPUT AREA */
-.input-area {
-  padding: 1rem 1.5rem; border-top: 1px solid var(--border);
-  background: var(--surface); display: flex; gap: 0.75rem; align-items: flex-end;
-}
-.input-wrap { flex: 1; position: relative; }
-textarea {
-  width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text); font-family: 'Inter', sans-serif;
-  font-size: 0.85rem; padding: 0.7rem 1rem; resize: none; outline: none;
-  max-height: 120px; min-height: 44px; transition: border-color 0.2s; line-height: 1.5;
-}
-textarea::placeholder { color: var(--text-muted); }
-textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(99,102,241,0.08); }
-.send-btn {
-  width: 44px; height: 44px; border-radius: var(--radius-sm); border: none;
-  background: linear-gradient(135deg, var(--accent), #4f46e5); color: white;
-  font-size: 1.1rem; cursor: pointer; flex-shrink: 0; display: flex;
-  align-items: center; justify-content: center; transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-}
-.send-btn:hover { box-shadow: 0 6px 20px rgba(99,102,241,0.4); transform: translateY(-1px); }
-.send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+        .stat-card h3 {
+            color: var(--muted);
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
 
-/* ===== SIDEBAR ===== */
-.sidebar {
-  width: 260px; background: var(--bg2); border-left: 1px solid var(--border);
-  padding: 1.25rem; overflow-y: auto; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.5rem;
-}
-.sidebar::-webkit-scrollbar { width: 4px; }
-.sidebar::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
+        .stat-card .value {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
 
-.sidebar-section {}
-.sidebar-title {
-  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--text-muted); margin-bottom: 0.65rem; font-weight: 600;
-  display: flex; align-items: center; gap: 0.4rem;
-}
-.sidebar-title .count {
-  background: var(--surface3); border-radius: 10px; padding: 0.1rem 0.4rem;
-  font-size: 0.6rem; color: var(--text-muted); font-weight: 500;
-}
+        .btn {
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 8px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.service-list { display: flex; flex-direction: column; gap: 0.3rem; }
-.service-item {
-  display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.7rem;
-  border-radius: var(--radius-xs); font-size: 0.78rem; cursor: pointer;
-  transition: all 0.2s; color: var(--text-secondary); border: 1px solid transparent;
-}
-.service-item:hover { background: var(--surface2); border-color: var(--border); color: var(--text); }
-.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.service-status { margin-left: auto; font-size: 0.6rem; color: var(--success); }
+        .btn:hover {
+            border-color: var(--accent);
+            background: rgba(108, 99, 255, 0.05);
+        }
 
-/* SIDEBAR QUICK STATS */
-.sidebar-stats {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
-  padding: 0.75rem; background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-}
-.stat-item { text-align: center; padding: 0.5rem; }
-.stat-value {
-  font-size: 1.1rem; font-weight: 700;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-.stat-label { font-size: 0.62rem; color: var(--text-muted); margin-top: 0.15rem; text-transform: uppercase; letter-spacing: 0.06em; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: #fff;
+            border: none;
+            justify-content: center;
+            text-align: center;
+            margin-top: 1rem;
+        }
 
-/* WELCOME SCREEN */
-.welcome {
-  text-align: center; padding: 3rem 2rem; flex: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-}
-.welcome-icon {
-  width: 72px; height: 72px; border-radius: 20px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; margin-bottom: 1.25rem;
-  box-shadow: 0 12px 40px rgba(99,102,241,0.25);
-}
-.welcome h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
-.welcome p { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7; max-width: 400px; }
-.welcome-chips {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; max-width: 500px;
-}
-.welcome-chip {
-  padding: 0.45rem 0.9rem; border-radius: 20px; border: 1px solid var(--border);
-  background: var(--surface); font-size: 0.75rem; color: var(--text-secondary);
-  cursor: pointer; transition: all 0.2s;
-}
-.welcome-chip:hover { border-color: var(--accent); color: var(--text); background: var(--surface2); }
-</style>
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-left">
+<div class="container">
     <div class="logo">
-      <div class="logo-icon">O</div>
-      <div class="logo-text">OmniBot</div>
+        <div class="logo-mark">⬡ OmniBot</div>
+        <div class="logo-sub">Your universal service gateway</div>
     </div>
-    <div class="header-nav">
-      <button class="nav-btn active">Chat</button>
-      <button class="nav-btn">Orders</button>
-      <button class="nav-btn">Analytics</button>
-    </div>
-  </div>
-  <div class="header-right">
-    <div class="header-icon" title="Search">
-      <span>&#128269;</span>
-    </div>
-    <div class="header-icon" title="Notifications">
-      <span>&#128276;</span>
-      <div class="badge">3</div>
-    </div>
-    <div class="header-icon" title="Settings">
-      <span>&#9881;</span>
-    </div>
-    <div class="user-pill" onclick="toggleUserMenu()">
-      <div class="user-avatar" id="avatarInitial">R</div>
-      <div>
-        <div class="user-name" id="userName">User</div>
-        <div class="user-role" id="userRole">Admin</div>
-      </div>
-    </div>
-    <button class="nav-btn" onclick="logout()" style="color:var(--text-muted)">Sign out</button>
-  </div>
-</div>
 
-<!-- QUICK ACTIONS -->
-<div class="quick-actions">
-  <button class="qa-btn" onclick="quickSend('Order food near me')"><span class="qa-icon">🍕</span> Order Food</button>
-  <button class="qa-btn" onclick="quickSend('Book a cab for me')"><span class="qa-icon">🚗</span> Book Cab</button>
-  <button class="qa-btn" onclick="quickSend('Book a bike ride')"><span class="qa-icon">🏍️</span> Bike Ride</button>
-  <button class="qa-btn" onclick="quickSend('Buy something on Amazon')"><span class="qa-icon">📦</span> Shop Now</button>
-  <button class="qa-btn" onclick="quickSend('Compare prices for me')"><span class="qa-icon">⚖️</span> Compare</button>
-  <button class="qa-btn" onclick="quickSend('Track my order')"><span class="qa-icon">📍</span> Track Order</button>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-  <div class="chat-panel">
-    <!-- WELCOME SCREEN -->
-    <div class="messages" id="messages">
-      <div class="welcome">
-        <div class="welcome-icon">🤖</div>
-        <h2>What can I help you with?</h2>
-        <p>I can order food, book rides, shop online, compare prices, and track orders across 15+ services.</p>
-        <div class="welcome-chips">
-          <div class="welcome-chip" onclick="quickSend('Show me nearby restaurants')">🍕 Nearby Restaurants</div>
-          <div class="welcome-chip" onclick="quickSend('Book Uber to airport')">🚗 Ride to Airport</div>
-          <div class="welcome-chip" onclick="quickSend('Find cheapest phone online')">📱 Compare Prices</div>
-          <div class="welcome-chip" onclick="quickSend('Order groceries')">🛒 Groceries</div>
-          <div class="welcome-chip" onclick="quickSend('Track my last order')">📍 Track Order</div>
-          <div class="welcome-chip" onclick="quickSend('Help')">❓ How it Works</div>
+    <div class="card">
+        <div class="tabs">
+            <button class="tab active" onclick="window.location.href='dashboard.html'">Dashboard</button>
+            <button class="tab" onclick="window.location.href='history.html'">History</button>
         </div>
-      </div>
-    </div>
 
-    <!-- TYPING -->
-    <div class="typing" id="typing">
-      <div class="typing-avatar">O</div>
-      <div class="typing-dots"><span></span><span></span><span></span></div>
-    </div>
+        <h2>Welcome, Demo User</h2>
 
-    <!-- INPUT -->
-    <div class="input-area">
-      <div class="input-wrap">
-        <textarea id="msgInput" placeholder="Ask me anything — food, rides, shopping..." rows="1"
-          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-      </div>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">&#10148;</button>
-    </div>
-  </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Orders</h3>
+                <div class="value">24</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Apps</h3>
+                <div class="value" style="color: var(--accent2);">4</div>
+            </div>
+        </div>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <!-- STATS -->
-    <div class="sidebar-stats">
-      <div class="stat-item">
-        <div class="stat-value" id="statOrders">0</div>
-        <div class="stat-label">Orders</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="statMessages">0</div>
-        <div class="stat-label">Messages</div>
-      </div>
-    </div>
+        <button class="btn"><span>🍕</span> Order Food (Zomato)</button>
+        <button class="btn"><span>🚗</span> Book Ride (Uber)</button>
+        <button class="btn"><span>🛒</span> Groceries (BigBasket)</button>
+        <button class="btn"><span>📦</span> Shopping (Amazon)</button>
 
-    <!-- FOOD -->
-    <div class="sidebar-section">
-      <div class="sidebar-title">🍔 Food Delivery <span class="count">4</span></div>
-      <div class="service-list">
-        <div class="service-item" onclick="quickSend('Order from Zomato')"><div class="dot" style="background:#e23744"></div>Zomato<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Order from Swiggy')"><div class="dot" style="background:#fc8019"></div>Swiggy<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Order from UberEats')"><div class="dot" style="background:#06c167"></div>UberEats<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Order from DoorDash')"><div class="dot" style="background:#ff3008"></div>DoorDash<div class="service-status">●</div></div>
-      </div>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">Sign Out</button>
     </div>
-
-    <!-- TRANSPORT -->
-    <div class="sidebar-section">
-      <div class="sidebar-title">🚗 Transport <span class="count">6</span></div>
-      <div class="service-list">
-        <div class="service-item" onclick="quickSend('Book Uber cab')"><div class="dot" style="background:#fff"></div>Uber<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Book Ola cab')"><div class="dot" style="background:#ffd700"></div>Ola<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Book Lyft ride')"><div class="dot" style="background:#ff00bf"></div>Lyft<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Book Bolt ride')"><div class="dot" style="background:#34d186"></div>Bolt<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Book Rapido bike')"><div class="dot" style="background:#ff6b00"></div>Rapido<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Book Yulu cycle')"><div class="dot" style="background:#00d4aa"></div>Yulu<div class="service-status">●</div></div>
-      </div>
-    </div>
-
-    <!-- SHOPPING -->
-    <div class="sidebar-section">
-      <div class="sidebar-title">🛍 Shopping <span class="count">5</span></div>
-      <div class="service-list">
-        <div class="service-item" onclick="quickSend('Buy on Amazon')"><div class="dot" style="background:#ff9900"></div>Amazon<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Buy on Flipkart')"><div class="dot" style="background:#2874f0"></div>Flipkart<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Buy on Meesho')"><div class="dot" style="background:#f43397"></div>Meesho<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Buy on Myntra')"><div class="dot" style="background:#ff3f6c"></div>Myntra<div class="service-status">●</div></div>
-        <div class="service-item" onclick="quickSend('Buy on eBay')"><div class="dot" style="background:#e53238"></div>eBay<div class="service-status">●</div></div>
-      </div>
-    </div>
-  </div>
 </div>
 
-<script>
-const API = '';
-let token = localStorage.getItem('omnibot_token');
-let sessionId = null;
-let userEmail = '';
-let messageCount = 0;
-
-if (!token) { window.location.href = '/login.html'; }
-
-function parseJwt(t) {
-  try { return JSON.parse(atob(t.split('.')[1])); } catch(e) { return {}; }
-}
-
-let userFullName = 'User';
-try {
-  const stored = JSON.parse(localStorage.getItem('omnibot_user') || '{}');
-  userFullName = stored.name || '';
-} catch(e) {}
-
-const payload = parseJwt(token);
-userEmail = payload.sub || 'User';
-if (!userFullName || userFullName === 'User') userFullName = userEmail.split('@')[0];
-const initial = userFullName.charAt(0).toUpperCase();
-document.getElementById('avatarInitial').textContent = initial;
-document.getElementById('userName').textContent = userFullName;
-document.getElementById('userRole').textContent = payload.role || 'User';
-
-function logout() {
-  localStorage.removeItem('omnibot_token');
-  localStorage.removeItem('omnibot_user');
-  window.location.href = '/login.html';
-}
-
-function toggleUserMenu() {}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-
-function quickSend(text) {
-  document.getElementById('msgInput').value = text;
-  sendMessage();
-}
-
-function formatTime(d) {
-  return new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-}
-
-function appendMessage(role, content, time, services) {
-  const container = document.getElementById('messages');
-  const welcome = container.querySelector('.welcome');
-  if (welcome) welcome.remove();
-
-  messageCount++;
-  document.getElementById('statMessages').textContent = messageCount;
-
-  const wrap = document.createElement('div');
-  wrap.className = 'msg ' + role;
-
-  const av = document.createElement('div');
-  av.className = 'msg-avatar';
-  av.textContent = role === 'bot' ? 'O' : initial;
-
-  const contentWrap = document.createElement('div');
-  contentWrap.className = 'msg-content';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.innerHTML = content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-  contentWrap.appendChild(bubble);
-
-  if (services && services.length > 0) {
-    const row = document.createElement('div');
-    row.className = 'cards-row';
-    services.forEach(s => {
-      const card = document.createElement('div');
-      card.className = 'svc-card';
-      card.innerHTML = `
-        <div class="svc-name">${s.logo} ${s.name}</div>
-        <div class="svc-meta"><span class="svc-eta">${s.estimate}</span></div>
-        <div class="svc-price">${s.price}</div>
-        <div class="svc-rating">⭐ ${s.rating}</div>
-        <button class="svc-btn" onclick="selectService('${s.name}','${s.action}')">Select ${s.name}</button>
-      `;
-      row.appendChild(card);
-    });
-    contentWrap.appendChild(row);
-  }
-
-  const timeEl = document.createElement('div');
-  timeEl.className = 'msg-time';
-  timeEl.textContent = formatTime(time || new Date());
-  contentWrap.appendChild(timeEl);
-
-  wrap.appendChild(av);
-  wrap.appendChild(contentWrap);
-  container.appendChild(wrap);
-  container.scrollTop = container.scrollHeight;
-}
-
-function selectService(name, action) {
-  quickSend(`I want to use ${name} for ${action.replace(/_/g,' ').toLowerCase()}`);
-}
-
-async function sendMessage() {
-  const input = document.getElementById('msgInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-
-  const btn = document.getElementById('sendBtn');
-  input.value = '';
-  input.style.height = 'auto';
-  btn.disabled = true;
-
-  appendMessage('user', msg, new Date(), null);
-  document.getElementById('typing').classList.add('show');
-
-  try {
-    const res = await fetch(API + '/v1/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
-      body: JSON.stringify({ message: msg, sessionId: sessionId })
-    });
-
-    if (res.status === 401) { logout(); return; }
-
-    const data = await res.json();
-    sessionId = data.sessionId;
-
-    document.getElementById('typing').classList.remove('show');
-    appendMessage('bot', data.reply, data.timestamp, data.services);
-
-  } catch (err) {
-    document.getElementById('typing').classList.remove('show');
-    appendMessage('bot', 'Unable to reach OmniBot server. Make sure the backend is running on port 8080.', new Date(), null);
-  } finally {
-    btn.disabled = false;
-    input.focus();
-  }
-}
-</script>
 </body>
 </html>

@@ -379,7 +379,7 @@
 <script>
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASS_RE  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,64}$/;
-const API_BASE = '';  // same origin — served by Spring Boot on port 8080
+const API_BASE = '';
 
 function switchTab(tab) {
   document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));

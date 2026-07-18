@@ -177,7 +177,7 @@ public class ChatService {
             case SHOPPING_ORDER -> VendorCategory.SHOPPING;
             case TRANSPORT_BOOK -> VendorCategory.TRANSPORT;
             case GROCERY_ORDER -> VendorCategory.GROCERY;
-            default -> resolveCategoryFromMessage(userMessage);
+            default -> null;
         };
 
         if (category != null) {
@@ -199,26 +199,5 @@ public class ChatService {
         }
 
         return mockServiceAdapter.getCards(intent, userMessage);
-    }
-
-    private VendorCategory resolveCategoryFromMessage(String msg) {
-        if (msg == null) return null;
-        String lower = msg.toLowerCase();
-        if (containsAny(lower, "ride", "cab", "uber", "ola", "lyft", "bolt", "bike", "auto", "rapido", "yulu"))
-            return VendorCategory.TRANSPORT;
-        if (containsAny(lower, "food", "eat", "biryani", "pizza", "burger", "restaurant", "zomato", "swiggy"))
-            return VendorCategory.FOOD;
-        if (containsAny(lower, "buy", "shop", "product", "laptop", "phone", "amazon", "flipkart"))
-            return VendorCategory.SHOPPING;
-        if (containsAny(lower, "grocery", "vegetable", "milk", "bread"))
-            return VendorCategory.GROCERY;
-        return null;
-    }
-
-    private boolean containsAny(String text, String... keywords) {
-        for (String kw : keywords) {
-            if (text.contains(kw)) return true;
-        }
-        return false;
     }
 }

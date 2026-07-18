@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +20,8 @@ import java.util.List;
  * POST /api/chat          — send a message, get AI reply + service cards
  * GET  /api/chat/history  — get session chat history
  */
-@RestController
+@Controller
+@ResponseBody
 @RequestMapping("/v1/chat")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost:8080", "null"})
 public class ChatController {
@@ -34,18 +36,17 @@ public class ChatController {
 
     @PostMapping
     public ResponseEntity<ChatResponse> chat(
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody ChatRequest request) {
-
-        Long userId = 1L; // Hardcoded for demo integration
-        ChatResponse response = chatService.chat(userId, request);
-        return ResponseEntity.ok(response);
+        Long userId = resolveUserId(userDetails);
+        return ResponseEntity.ok(chatService.chat(userId, request));
     }
 
     @GetMapping("/history")
     public ResponseEntity<List<ChatHistoryItem>> history(
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam String sessionId) {
-
-        Long userId = 1L; // Hardcoded for demo integration
+        Long userId = resolveUserId(userDetails);
         return ResponseEntity.ok(chatService.getHistory(userId, sessionId));
     }
 
