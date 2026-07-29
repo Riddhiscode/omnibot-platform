@@ -302,6 +302,16 @@ function formatTime(d) {
   return new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 }
 
+function handleVendorAction(name, price, actionType, deepLinkUrl) {
+  if (actionType === 'DEEP_LINK' || !['Zomato','Swiggy','Uber','Ola','BigBasket','Amazon'].includes(name)) {
+    const url = deepLinkUrl && deepLinkUrl.length > 5 ? deepLinkUrl : 'https://www.google.com/search?q=' + encodeURIComponent(name + ' app');
+    window.open(url, '_blank');
+    appendMessage('bot', `🚀 Launching **${name}** native app intent (\`${url.substring(0, 45)}...\`).`, new Date(), null);
+  } else {
+    openCheckout(name, price);
+  }
+}
+
 async function confirmAction(url) {
   try {
     const res = await fetch(url, {
