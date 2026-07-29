@@ -3,6 +3,8 @@ package com.omnibot.service;
 import com.omnibot.agent.BotReplyEngine;
 import com.omnibot.agent.IntentService;
 import com.omnibot.agent.MockServiceAdapter;
+import com.omnibot.agent.SpringAiVendorTools;
+import com.omnibot.agent.tools.WriteOperations;
 import com.omnibot.adapter.VendorAdapterRegistry;
 import com.omnibot.adapter.VendorCategory;
 import com.omnibot.adapter.dto.VendorSearchRequest;
@@ -22,15 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Core chatbot orchestration service.
- *
- * Flow:
- *   1. Receive user message
- *   2. Detect intent (IntentDetector)
- *   3. Generate bot reply (BotReplyEngine)
- *   4. Fetch mock service cards (MockServiceAdapter)
- *   5. Persist both messages to DB
- *   6. Return structured ChatResponse
+ * Core chatbot orchestration service incorporating Spring AI Tools.
  */
 @Service
 public class ChatService {
@@ -43,35 +37,35 @@ public class ChatService {
     private final VendorAdapterRegistry vendorRegistry;
     private final ChatMessageRepository chatRepo;
     private final ConversationFlowService flowService;
+    private final SpringAiVendorTools springAiVendorTools;
+    private final WriteOperations writeOperations;
 
     public ChatService(IntentService intentService,
                        BotReplyEngine botReplyEngine,
                        MockServiceAdapter mockServiceAdapter,
                        VendorAdapterRegistry vendorRegistry,
                        ChatMessageRepository chatRepo,
-                       ConversationFlowService flowService) {
+                       ConversationFlowService flowService,
+                       SpringAiVendorTools springAiVendorTools,
+                       WriteOperations writeOperations) {
         this.intentService = intentService;
         this.botReplyEngine = botReplyEngine;
         this.mockServiceAdapter = mockServiceAdapter;
         this.vendorRegistry = vendorRegistry;
         this.chatRepo = chatRepo;
         this.flowService = flowService;
+        this.springAiVendorTools = springAiVendorTools;
+        this.writeOperations = writeOperations;
     }
 
     @Transactional
     public ChatResponse chat(Long userId, ChatRequest request) {
-        // Generate or reuse session
         String sessionId = (request.getSessionId() != null && !request.getSessionId().isBlank())
                 ? request.getSessionId()
                 : UUID.randomUUID().toString();
 
         String userMsg = request.getMessage().trim();
 
-        // ------------------------------------------------------------
-        // If a multi-step booking flow is already in progress for this
-        // session, treat this message as the answer to the current
-        // question and let the flow service handle it.
-        // ------------------------------------------------------------
         if (flowService.hasActiveFlow(sessionId)) {
             ChatResponse flowResponse = flowService.continueFlow(userId, sessionId, userMsg);
             persistTurn(userId, sessionId, userMsg, flowResponse.getReply(),
@@ -79,7 +73,7 @@ public class ChatService {
             return flowResponse;
         }
 
-        // 1. Detect intent using new NLP service
+        // 1. Detect intent
         java.util.Map<String, Object> parsed = intentService.parseIntent(userMsg);
         String detectedIntentStr = (String) parsed.get("intent");
         
@@ -90,12 +84,8 @@ public class ChatService {
             intent = Intent.UNKNOWN;
         }
         
-        log.info("User {} | Intent: {} | Message: {}", userId, intent, userMsg);
+        log.info("User {} | Session {} | Intent: {} | Message: {}", userId, sessionId, intent, userMsg);
 
-        // ------------------------------------------------------------
-        // TRANSPORT_BOOK and FOOD_ORDER start guided multi-step flows
-        // instead of immediately showing cards.
-        // ------------------------------------------------------------
         if (intent == Intent.TRANSPORT_BOOK) {
             ChatResponse flowResponse = flowService.startTransportFlow(userId, sessionId);
             persistTurn(userId, sessionId, userMsg, flowResponse.getReply(), intent);
@@ -107,31 +97,11 @@ public class ChatService {
             return flowResponse;
         }
 
-        // Immediate card responses (no multi-step flow)
-        if (intent == Intent.GROCERY_ORDER || intent == Intent.SHOPPING_ORDER
-                || intent == Intent.MULTI_INTENT_RIDE_FOOD || intent == Intent.COMPARE) {
-            String reply = botReplyEngine.generateReply(intent, userMsg);
-            List<ServiceCard> cards = getVendorCards(intent, userMsg);
-            persistTurn(userId, sessionId, userMsg, reply, intent);
-            ChatResponse response = new ChatResponse();
-            response.setSessionId(sessionId);
-            response.setReply(reply);
-            response.setIntent(intent.name());
-            response.setServices(cards);
-            response.setTimestamp(LocalDateTime.now());
-            return response;
-        }
-
-        // 2. Generate reply
         String reply = botReplyEngine.generateReply(intent, userMsg);
-
-        // 3. Get service cards from vendor adapters
         List<ServiceCard> cards = getVendorCards(intent, userMsg);
 
-        // 4-5. Persist messages
         persistTurn(userId, sessionId, userMsg, reply, intent);
 
-        // 6. Build response
         ChatResponse response = new ChatResponse();
         response.setSessionId(sessionId);
         response.setReply(reply);
@@ -192,7 +162,7 @@ public class ChatService {
                                         : category == VendorCategory.TRANSPORT ? "BOOK_RIDE"
                                         : "BUY_NOW",
                                 r.getEtaLabel() != null ? r.getEtaLabel() : r.getEtaMinutes() + " mins",
-                                r.getPrice() + " " + r.getCurrency(),
+                                "₹" + (r.getPrice() != null ? r.getPrice().intValue() : 150),
                                 String.valueOf(r.getRating())))
                         .collect(Collectors.toList());
             }
