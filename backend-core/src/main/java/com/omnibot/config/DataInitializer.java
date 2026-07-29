@@ -26,17 +26,19 @@ public class DataInitializer {
     @Bean
     CommandLineRunner seedDemoUser(UserRepository userRepository,
                                    PasswordEncoder passwordEncoder,
-                                   VendorMappingRepository vendorMappingRepository) {
+                                   VendorMappingRepository vendorMappingRepository,
+                                   com.omnibot.repository.ConnectedAccountRepository connectedAccountRepository) {
         return args -> {
-            seedDemoUser(userRepository, passwordEncoder);
+            seedDemoUser(userRepository, passwordEncoder, connectedAccountRepository);
             seedVendors(vendorMappingRepository);
         };
     }
 
-    private void seedDemoUser(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private void seedDemoUser(UserRepository userRepository, PasswordEncoder passwordEncoder, com.omnibot.repository.ConnectedAccountRepository connectedAccountRepository) {
         String demoEmail = "demo@omnibot.in";
+        User demo;
         if (userRepository.findByEmail(demoEmail).isEmpty()) {
-            User demo = User.builder()
+            demo = User.builder()
                     .email(demoEmail)
                     .fullName("OmniBot Demo User")
                     .passwordHash(passwordEncoder.encode("Demo@1234"))
@@ -48,7 +50,32 @@ public class DataInitializer {
             userRepository.save(demo);
             log.info("✅ Demo user seeded: {} / Demo@1234", demoEmail);
         } else {
+            demo = userRepository.findByEmail(demoEmail).get();
             log.info("ℹ️  Demo user already exists, skipping seed.");
+        }
+
+        String adminEmail = "admin@omnibot.in";
+        User admin = userRepository.findByEmail(adminEmail).orElseGet(() -> {
+            return User.builder()
+                    .email(adminEmail)
+                    .fullName("angel")
+                    .phone("9999999999")
+                    .role(User.Role.ADMIN)
+                    .isActive(true)
+                    .isVerified(true)
+                    .build();
+        });
+        admin.setFullName("angel");
+        admin.setPasswordHash(passwordEncoder.encode("Admin@12345"));
+        userRepository.save(admin);
+        log.info("✅ Admin user seeded/updated: {} / Admin@12345", adminEmail);
+        
+        // Seed Connected Accounts if they don't exist
+        if (connectedAccountRepository.findByUserId(demo.getId()).isEmpty()) {
+            connectedAccountRepository.save(new com.omnibot.model.ConnectedAccount(demo.getId(), "zomato", com.omnibot.model.AccountStatus.CONNECTED, 24));
+            connectedAccountRepository.save(new com.omnibot.model.ConnectedAccount(demo.getId(), "uber", com.omnibot.model.AccountStatus.CONNECTED, 41));
+            connectedAccountRepository.save(new com.omnibot.model.ConnectedAccount(demo.getId(), "amazon", com.omnibot.model.AccountStatus.CONNECTED, 32));
+            log.info("✅ Default connected accounts seeded.");
         }
     }
 

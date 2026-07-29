@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @ResponseBody
-@RequestMapping("/auth")
+@RequestMapping({"/auth", "/api/auth", "/api/v1/auth"})
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://localhost:8080"})
 public class AuthController {
 

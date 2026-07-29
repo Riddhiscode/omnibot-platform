@@ -9,7 +9,6 @@ const __dirname = path.dirname(__filename)
 export default defineConfig({
   plugins: [react()],
   
-  // Pre-bundle heavy dependencies
   optimizeDeps: {
     include: [
       'react',
@@ -21,32 +20,30 @@ export default defineConfig({
       'react-router-dom'
     ],
     esbuildOptions: {
-      // Speed up dependency prebundling
       target: 'es2020'
     }
   },
 
-  // Optimize resolution
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
 
-  // Dev server config
   server: {
-    // Exclude directories from watcher
+    host: '0.0.0.0',
+    port: 5173,
     watch: {
       ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**']
     },
-    // Optimize HMR
-    hmr: {
-      protocol: 'ws',
-      host: 'localhost',
-      port: 5173
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      }
     }
   },
 
-  // Logging
   logLevel: 'warn'
 })

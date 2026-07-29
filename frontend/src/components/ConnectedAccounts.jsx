@@ -6,16 +6,16 @@ import {
   Shield, Award, Star, Camera
 } from 'lucide-react';
 
-/* ── Static demo data ─────────────────────────────────────── */
-const CONNECTED_VENDORS = [
-  { id: 'zomato',     name: 'Zomato',     emoji: '🍕', status: 'connected', orders: 24  },
-  { id: 'swiggy',     name: 'Swiggy',     emoji: '🛵', status: 'connected', orders: 18  },
-  { id: 'uber',       name: 'Uber',       emoji: '🚗', status: 'connected', orders: 41  },
-  { id: 'ola',        name: 'Ola',        emoji: '🚕', status: 'connected', orders: 15  },
-  { id: 'amazon',     name: 'Amazon',     emoji: '📦', status: 'connected', orders: 32  },
-  { id: 'flipkart',   name: 'Flipkart',   emoji: '🛒', status: 'connected', orders: 11  },
-  { id: 'bigbasket',  name: 'BigBasket',  emoji: '🥦', status: 'pending',   orders: 0   },
-  { id: 'jiomart',    name: 'JioMart',    emoji: '🏪', status: 'not_linked',orders: 0   },
+/* ── Base vendors blueprint ───────────────────────────────── */
+const BASE_VENDORS = [
+  { id: 'zomato',     name: 'Zomato',     emoji: '🍕' },
+  { id: 'swiggy',     name: 'Swiggy',     emoji: '🛵' },
+  { id: 'uber',       name: 'Uber',       emoji: '🚗' },
+  { id: 'ola',        name: 'Ola',        emoji: '🚕' },
+  { id: 'amazon',     name: 'Amazon',     emoji: '📦' },
+  { id: 'flipkart',   name: 'Flipkart',   emoji: '🛒' },
+  { id: 'bigbasket',  name: 'BigBasket',  emoji: '🥦' },
+  { id: 'jiomart',    name: 'JioMart',    emoji: '🏪' },
 ];
 
 const BADGES = [
@@ -24,8 +24,9 @@ const BADGES = [
   { label: 'Multi-Platform Pro',emoji: '🌐', desc: '5+ vendors connected'        },
 ];
 
-export default function ConnectedAccounts({ user }) {
+export default function ConnectedAccounts({ user, token }) {
   const [editing, setEditing] = useState(false);
+  const [vendors, setVendors] = useState(BASE_VENDORS.map(v => ({...v, status: 'not_linked', orders: 0})));
   const [profile, setProfile] = useState({
     name:    user?.fullName || 'Riddhi S.',
     email:   user?.email    || 'demo@omnibot.in',
@@ -34,8 +35,54 @@ export default function ConnectedAccounts({ user }) {
   });
   const [draft, setDraft] = useState({ ...profile });
 
-  const totalOrders = CONNECTED_VENDORS.reduce((s, v) => s + v.orders, 0);
-  const connected   = CONNECTED_VENDORS.filter(v => v.status === 'connected').length;
+  React.useEffect(() => {
+    fetchAccounts();
+  }, [token]);
+
+  const fetchAccounts = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/v1/accounts', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const mapped = BASE_VENDORS.map(base => {
+        const found = data.find(d => d.vendorId === base.id);
+        if (found) {
+          return { ...base, status: found.status.toLowerCase(), orders: found.orderCount };
+        }
+        return { ...base, status: 'not_linked', orders: 0 };
+      });
+      setVendors(mapped);
+    } catch (e) {
+      console.error('Failed to fetch accounts:', e);
+    }
+  };
+
+  const handleToggle = async (vendor) => {
+    try {
+      if (vendor.status === 'connected' || vendor.status === 'pending') {
+        if (window.confirm(`Are you sure you want to disconnect ${vendor.name}?`)) {
+          await fetch(`http://localhost:8080/api/v1/accounts/unlink/${vendor.id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          fetchAccounts();
+        }
+      } else {
+        await fetch('http://localhost:8080/api/v1/accounts/link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ vendorId: vendor.id })
+        });
+        fetchAccounts();
+      }
+    } catch (e) {
+      console.error('Failed to toggle account:', e);
+    }
+  };
+
+  const totalOrders = vendors.reduce((s, v) => s + v.orders, 0);
+  const connected   = vendors.filter(v => v.status === 'connected').length;
 
   const save = () => { setProfile({ ...draft }); setEditing(false); };
 
@@ -143,8 +190,8 @@ export default function ConnectedAccounts({ user }) {
             <Link2 size={16} className="text-purple-500" /> Connected Accounts
           </h2>
           <div className="grid grid-cols-2 gap-2">
-            {CONNECTED_VENDORS.map(v => (
-              <motion.div key={v.id} whileHover={{ scale: 1.02 }}
+            {vendors.map(v => (
+              <motion.div key={v.id} whileHover={{ scale: 1.02 }} onClick={() => handleToggle(v)}
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer
                   ${v.status === 'connected'
                     ? 'border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50'

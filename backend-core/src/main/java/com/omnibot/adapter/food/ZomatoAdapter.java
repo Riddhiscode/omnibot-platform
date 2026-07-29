@@ -155,7 +155,7 @@ public class ZomatoAdapter implements VendorAdapter {
             result.setDescription(item[1]);
             result.setPrice(BigDecimal.valueOf(random.nextInt(120, 451)));
             result.setCurrency("INR");
-            result.setEtaMinutes(random.nextInt(20, 46));
+            result.setEtaMinutes(com.omnibot.adapter.util.DynamicDataGenerator.calculateDynamicEta(20, 46));
             result.setEtaLabel(result.getEtaMinutes() + " mins");
             result.setRating(random.nextDouble(3.8, 4.9));
             result.setReviewCount(random.nextInt(50, 2001));

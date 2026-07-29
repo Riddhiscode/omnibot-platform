@@ -1,16 +1,18 @@
 package com.omnibot.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-@Controller
-@ResponseBody
+@RestController
+@CrossOrigin(originPatterns = "*", allowedHeaders = "*")
 public class HealthController {
 
-    @GetMapping("/health")
-    public Map<String, String> health() {
-        return Map.of("status", "UP", "message", "OmniBot is running");
+    @RequestMapping(
+        value = {"/health", "/api/health", "/api/v1/health", "/v1/health"},
+        method = {RequestMethod.GET, RequestMethod.HEAD}
+    )
+    public ResponseEntity<Map<String, String>> health() {
+        return ResponseEntity.ok(Map.of("status", "UP", "message", "OmniBot is running"));
     }
 }

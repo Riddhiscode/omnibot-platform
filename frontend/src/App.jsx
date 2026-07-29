@@ -1,62 +1,94 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Sidebar from './components/Sidebar';
+import React, { useState } from 'react';
+import Header from './components/Header';
 import ChatEngine from './components/ChatEngine';
-import ContextPanel from './components/ContextPanel';
-import Landing from './components/Landing';
-import AnalyticsDashboard from './components/AnalyticsDashboard';
+import ServiceSidebar from './components/ServiceSidebar';
 import AuthPage from './components/AuthPage';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
 import OrderHistory from './components/OrderHistory';
 import ConnectedAccounts from './components/ConnectedAccounts';
-import PaymentVault from './components/PaymentVault';
-import AppSettings from './components/AppSettings';
 
 function App() {
   const [activeTab, setActiveTab] = useState('chat');
-  const [hasStarted, setHasStarted] = useState(false);
-  const [auth, setAuth] = useState(null);
+  const [quickInput, setQuickInput] = useState('');
+  const [auth, setAuth] = useState(() => {
+    const token = localStorage.getItem('omnibot_token');
+    const user = JSON.parse(localStorage.getItem('omnibot_user') || 'null');
+    return token ? { token, user: user || { name: 'angel', email: 'angel@omnibot.ai' } } : null;
+  });
 
   const handleLogin = (user, token) => {
+    localStorage.setItem('omnibot_token', token);
+    localStorage.setItem('omnibot_user', JSON.stringify(user));
     setAuth({ token, user });
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('omnibot_token');
+    localStorage.removeItem('omnibot_user');
     setAuth(null);
-    setHasStarted(false);
     setActiveTab('chat');
+  };
+
+  const handleQuickSend = (text) => {
+    setActiveTab('chat');
+    setQuickInput(text);
   };
 
   if (!auth) {
     return (
-      <div className="flex h-screen bg-surface-muted overflow-hidden">
+      <div className="h-screen w-screen bg-[#0b0e14]">
         <AuthPage onLogin={handleLogin} />
       </div>
     );
   }
 
-  if (!hasStarted) {
-    return (
-      <div className="flex h-screen bg-surface-muted overflow-hidden">
-        <Landing onStart={() => setHasStarted(true)} user={auth.user} onLogout={handleLogout} />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen bg-surface-muted overflow-hidden">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} user={auth.user} onLogout={handleLogout} />
-      <main className="flex-grow flex flex-col h-full bg-white shadow-neomorphic z-10 m-2 rounded-2xl overflow-hidden relative">
-        {activeTab === 'analytics' && <AnalyticsDashboard />}
-        {activeTab === 'history' && <OrderHistory />}
-        {activeTab === 'wallet' && <PaymentVault />}
-        {activeTab === 'profile' && <ConnectedAccounts user={auth.user} />}
-        {activeTab === 'settings' && <AppSettings user={auth.user} />}
-        {activeTab === 'chat' && <ChatEngine serverOk={true} token={auth.token} />}
-      </main>
-      <aside className="hidden lg:flex w-96 flex-col bg-surface h-full shadow-sm m-2 ml-0 rounded-2xl overflow-hidden">
-        <ContextPanel />
-      </aside>
+    <div className="flex flex-col h-screen w-screen bg-[#0b0e14] overflow-hidden">
+      {/* Top Fixed Header */}
+      <Header 
+        user={auth.user} 
+        onLogout={handleLogout} 
+        onQuickSend={handleQuickSend} 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex flex-grow h-[calc(100vh-3.5rem)] overflow-hidden relative">
+        {activeTab === 'chat' && (
+          <>
+            {/* 80% Chat Column */}
+            <main className="flex-grow h-full overflow-hidden">
+              <ChatEngine 
+                serverOk={true} 
+                token={auth.token} 
+                quickInput={quickInput}
+                onClearQuickInput={() => setQuickInput('')}
+              />
+            </main>
+            {/* 20% Service Directory Sidebar */}
+            <ServiceSidebar onQuickSend={handleQuickSend} />
+          </>
+        )}
+
+        {activeTab === 'analytics' && (
+          <div className="w-full h-full overflow-y-auto bg-white">
+            <AnalyticsDashboard token={auth.token} />
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="w-full h-full overflow-y-auto bg-white">
+            <OrderHistory token={auth.token} />
+          </div>
+        )}
+
+        {activeTab === 'profile' && (
+          <div className="w-full h-full overflow-y-auto bg-white">
+            <ConnectedAccounts user={auth.user} token={auth.token} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
