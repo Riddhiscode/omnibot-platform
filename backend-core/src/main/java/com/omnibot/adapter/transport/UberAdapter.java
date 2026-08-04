@@ -57,9 +57,67 @@ public class UberAdapter implements VendorAdapter {
     @Override
     public List<VendorSearchResult> search(VendorSearchRequest request) {
         if (vendorProperties.isLiveMode() && vendorProperties.getUber().hasApiKey()) {
-            log.warn("[Uber] Live API integration not implemented yet, falling back to mock");
+            return liveSearch(request);
         }
 
+        return mockSearch(request);
+    }
+
+    private List<VendorSearchResult> liveSearch(VendorSearchRequest request) {
+        String endpoint = vendorProperties.getUber().getEndpoint();
+        String apiKey = vendorProperties.getUber().getApiKey();
+        double startLat = request != null && request.getLatitude() != null ? request.getLatitude() : 12.9716;
+        double startLng = request != null && request.getLongitude() != null ? request.getLongitude() : 77.5946;
+        double endLat = startLat + 0.05;
+        double endLng = startLng + 0.05;
+
+        String url = String.format("%s/v1.2/estimates/price?start_latitude=%f&start_longitude=%f&end_latitude=%f&end_longitude=%f",
+                endpoint != null && !endpoint.isBlank() ? endpoint : "https://api.uber.com",
+                startLat, startLng, endLat, endLng);
+
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.set("Authorization", "Bearer " + apiKey);
+            headers.setAccept(List.of(org.springframework.http.MediaType.APPLICATION_JSON));
+            org.springframework.http.HttpEntity<Void> entity = new org.springframework.http.HttpEntity<>(headers);
+
+            org.springframework.http.ResponseEntity<java.util.Map> response = restTemplate.exchange(url, org.springframework.http.HttpMethod.GET, entity, java.util.Map.class);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                List<java.util.Map<String, Object>> prices = (List<java.util.Map<String, Object>>) response.getBody().get("prices");
+                if (prices != null && !prices.isEmpty()) {
+                    List<VendorSearchResult> results = new ArrayList<>();
+                    for (java.util.Map<String, Object> p : prices) {
+                        VendorSearchResult res = new VendorSearchResult();
+                        res.setVendorName("Uber");
+                        res.setItemName((String) p.getOrDefault("localized_display_name", "Uber Ride"));
+                        res.setDescription("Live ride estimate via Uber API");
+                        
+                        Object estObj = p.get("high_estimate");
+                        res.setPrice(estObj instanceof Number ? BigDecimal.valueOf(((Number) estObj).doubleValue()) : BigDecimal.valueOf(220));
+                        res.setCurrency((String) p.getOrDefault("currency_code", "INR"));
+                        
+                        Object durationObj = p.get("duration");
+                        int mins = durationObj instanceof Number ? ((Number) durationObj).intValue() / 60 : 12;
+                        res.setEtaMinutes(mins);
+                        res.setEtaLabel(mins + " mins away");
+                        res.setRating(4.8);
+                        res.setAvailable(true);
+                        res.setTags(List.of("Live API", "Direct Partner"));
+                        results.add(res);
+                    }
+                    log.info("Uber Live API returned {} estimate tiers", results.size());
+                    return results;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to call Uber Live API (url={}): {} — falling back to mock", url, e.getMessage());
+        }
+
+        return mockSearch(request);
+    }
+
+    private List<VendorSearchResult> mockSearch(VendorSearchRequest request) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         List<VendorSearchResult> results = new ArrayList<>();
 
