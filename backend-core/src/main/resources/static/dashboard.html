@@ -353,9 +353,35 @@ function updateModalPrice() {
 }
 
 function openCheckout(name, priceStr) {
-  selectedVendorForPay = name;
-  document.getElementById('modalVendor').textContent = name;
-  updateModalPrice();
+  let vendor = name;
+  let dish = '';
+  if (name.includes('—')) {
+    const parts = name.split('—');
+    vendor = parts[0].trim();
+    dish = parts[1].trim();
+  }
+  
+  selectedVendorForPay = vendor;
+  document.getElementById('modalVendor').textContent = vendor;
+
+  const num = parseFloat((priceStr || '').toString().replace(/[^0-9.]/g, '') || '240');
+  selectedPriceForPay = num;
+  document.getElementById('modalAmount').textContent = '₹' + num;
+
+  const itemSel = document.getElementById('modalItemSelect');
+  if (itemSel) {
+    if (dish) {
+      itemSel.innerHTML = `<option value="${dish}" data-price="${num}">${dish} — ₹${num}</option>`;
+    } else {
+      itemSel.innerHTML = `
+        <option value="Special Biryani Combo" data-price="280">Special Biryani Combo — ₹280</option>
+        <option value="Paneer Butter Masala + 2 Naan" data-price="240">Paneer Butter Masala + 2 Naan — ₹240</option>
+        <option value="Farmhouse Pizza (Medium)" data-price="320">Farmhouse Pizza (Medium) — ₹320</option>
+        <option value="Crispy Chicken Burger" data-price="190">Crispy Chicken Burger — ₹190</option>
+      `;
+    }
+  }
+
   document.getElementById('paymentModal').classList.add('active');
 }
 

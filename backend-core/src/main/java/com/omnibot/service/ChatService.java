@@ -86,34 +86,52 @@ public class ChatService {
         
         log.info("User {} | Session {} | Intent: {} | Message: {}", userId, sessionId, intent, userMsg);
 
-        // Fast-path: Provide instant, time-saving 1-step response without tedious back-and-forth slot filling questions
-        String reply = botReplyEngine.generateReply(intent, userMsg);
-        List<ServiceCard> cards = getVendorCards(intent, userMsg);
+        // Check if food request specifies a dish
+        boolean isGenericFoodRequest = intent == Intent.FOOD_ORDER &&
+                !userMsg.toLowerCase().matches(".*(biryani|pizza|burger|paneer|chicken|dosa|momo|roll|pasta|noodle|thali|sandwich|salad|cake|ice cream).*");
 
-        // If intent is FOOD_ORDER or TRANSPORT_BOOK, ensure cards are immediately populated from vendor registry
-        if (cards == null || cards.isEmpty()) {
-            VendorCategory category = switch (intent) {
-                case FOOD_ORDER -> VendorCategory.FOOD;
-                case TRANSPORT_BOOK -> VendorCategory.TRANSPORT;
-                case GROCERY_ORDER -> VendorCategory.GROCERY;
-                case SHOPPING_ORDER -> VendorCategory.SHOPPING;
-                default -> null;
-            };
+        String reply;
+        List<ServiceCard> cards = null;
 
-            if (category != null) {
-                VendorSearchRequest searchReq = new VendorSearchRequest();
-                searchReq.setQuery(userMsg);
-                searchReq.setLocation("Current Location");
-                List<VendorSearchResult> searchResults = vendorRegistry.searchAll(category, searchReq);
+        if (isGenericFoodRequest) {
+            reply = "🍱 **What exact dish would you like to order?**\nHere are popular top-rated dishes available right now on Swiggy and Zomato — select a dish or type your craving below:";
+            
+            cards = List.of(
+                new ServiceCard("Swiggy — Chicken Biryani Special", "🍛", "swiggy://search?q=biryani", "22 mins", "₹260", "4.8"),
+                new ServiceCard("Swiggy — Farmhouse Cheese Pizza", "🍕", "swiggy://search?q=pizza", "28 mins", "₹340", "4.6"),
+                new ServiceCard("Swiggy — Paneer Butter Masala + 2 Naan", "🧈", "swiggy://search?q=paneer", "20 mins", "₹220", "4.7"),
+                new ServiceCard("Swiggy — Crispy Chicken Burger & Fries", "🍔", "swiggy://search?q=burger", "25 mins", "₹190", "4.5"),
+                new ServiceCard("Swiggy — Steamed Chicken Momos (8 Pcs)", "🥟", "swiggy://search?q=momos", "18 mins", "₹150", "4.6"),
+                new ServiceCard("Zomato — Dal Makhani & Jeera Rice", "🍚", "zomato://search?q=dal", "30 mins", "₹210", "4.7")
+            );
+        } else {
+            reply = botReplyEngine.generateReply(intent, userMsg);
+            cards = getVendorCards(intent, userMsg);
 
-                cards = searchResults.stream().map(res -> new ServiceCard(
-                        res.getVendorName(),
-                        res.getVendorName().equalsIgnoreCase("Swiggy") ? "🍊" : "⚡",
-                        res.getVendorName().equalsIgnoreCase("Swiggy") ? "swiggy://explore?query=" + userMsg : "zomato://search?q=" + userMsg,
-                        res.getEtaLabel() != null ? res.getEtaLabel() : "15-25 mins",
-                        "₹" + (res.getPrice() != null ? res.getPrice().intValue() : 199),
-                        String.valueOf(res.getRating() > 0 ? res.getRating() : 4.5)
-                )).collect(Collectors.toList());
+            if (cards == null || cards.isEmpty()) {
+                VendorCategory category = switch (intent) {
+                    case FOOD_ORDER -> VendorCategory.FOOD;
+                    case TRANSPORT_BOOK -> VendorCategory.TRANSPORT;
+                    case GROCERY_ORDER -> VendorCategory.GROCERY;
+                    case SHOPPING_ORDER -> VendorCategory.SHOPPING;
+                    default -> null;
+                };
+
+                if (category != null) {
+                    VendorSearchRequest searchReq = new VendorSearchRequest();
+                    searchReq.setQuery(userMsg);
+                    searchReq.setLocation("Current Location");
+                    List<VendorSearchResult> searchResults = vendorRegistry.searchAll(category, searchReq);
+
+                    cards = searchResults.stream().map(res -> new ServiceCard(
+                            res.getVendorName() + " — " + (res.getItemName() != null ? res.getItemName() : userMsg),
+                            res.getVendorName().equalsIgnoreCase("Swiggy") ? "🍊" : "⚡",
+                            res.getVendorName().equalsIgnoreCase("Swiggy") ? "swiggy://explore?query=" + userMsg : "zomato://search?q=" + userMsg,
+                            res.getEtaLabel() != null ? res.getEtaLabel() : "15-25 mins",
+                            "₹" + (res.getPrice() != null ? res.getPrice().intValue() : 199),
+                            String.valueOf(res.getRating() > 0 ? res.getRating() : 4.5)
+                    )).collect(Collectors.toList());
+                }
             }
         }
 
