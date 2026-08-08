@@ -86,19 +86,36 @@ public class ChatService {
         
         log.info("User {} | Session {} | Intent: {} | Message: {}", userId, sessionId, intent, userMsg);
 
-        if (intent == Intent.TRANSPORT_BOOK) {
-            ChatResponse flowResponse = flowService.startTransportFlow(userId, sessionId);
-            persistTurn(userId, sessionId, userMsg, flowResponse.getReply(), intent);
-            return flowResponse;
-        }
-        if (intent == Intent.FOOD_ORDER) {
-            ChatResponse flowResponse = flowService.startFoodFlow(userId, sessionId);
-            persistTurn(userId, sessionId, userMsg, flowResponse.getReply(), intent);
-            return flowResponse;
-        }
-
+        // Fast-path: Provide instant, time-saving 1-step response without tedious back-and-forth slot filling questions
         String reply = botReplyEngine.generateReply(intent, userMsg);
         List<ServiceCard> cards = getVendorCards(intent, userMsg);
+
+        // If intent is FOOD_ORDER or TRANSPORT_BOOK, ensure cards are immediately populated from vendor registry
+        if (cards == null || cards.isEmpty()) {
+            VendorCategory category = switch (intent) {
+                case FOOD_ORDER -> VendorCategory.FOOD;
+                case TRANSPORT_BOOK -> VendorCategory.TRANSPORT;
+                case GROCERY_ORDER -> VendorCategory.GROCERY;
+                case SHOPPING_ORDER -> VendorCategory.SHOPPING;
+                default -> null;
+            };
+
+            if (category != null) {
+                VendorSearchRequest searchReq = new VendorSearchRequest();
+                searchReq.setQuery(userMsg);
+                searchReq.setLocation("Current Location");
+                List<VendorSearchResult> searchResults = vendorRegistry.searchAll(category, searchReq);
+
+                cards = searchResults.stream().map(res -> new ServiceCard(
+                        res.getVendorName(),
+                        res.getVendorName().equalsIgnoreCase("Swiggy") ? "🍊" : "⚡",
+                        res.getVendorName().equalsIgnoreCase("Swiggy") ? "swiggy://explore?query=" + userMsg : "zomato://search?q=" + userMsg,
+                        res.getEtaLabel() != null ? res.getEtaLabel() : "15-25 mins",
+                        "₹" + (res.getPrice() != null ? res.getPrice().intValue() : 199),
+                        String.valueOf(res.getRating() > 0 ? res.getRating() : 4.5)
+                )).collect(Collectors.toList());
+            }
+        }
 
         persistTurn(userId, sessionId, userMsg, reply, intent);
 
