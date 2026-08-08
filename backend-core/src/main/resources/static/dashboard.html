@@ -312,10 +312,15 @@ function formatTime(d) {
 }
 
 function handleVendorAction(name, price, actionType, deepLinkUrl) {
-  if (actionType === 'DEEP_LINK' || !['Zomato','Swiggy','Uber','Ola','BigBasket','Amazon'].includes(name)) {
-    const url = deepLinkUrl && deepLinkUrl.length > 5 ? deepLinkUrl : 'https://www.google.com/search?q=' + encodeURIComponent(name + ' app');
+  const vendorClean = (name || '').split('—')[0].trim();
+  const apiSupportedVendors = ['Zomato', 'Swiggy', 'Uber', 'Ola', 'BigBasket', 'Amazon', 'UberEats', 'DoorDash'];
+
+  if (apiSupportedVendors.some(v => v.toLowerCase() === vendorClean.toLowerCase())) {
+    openCheckout(name, price);
+  } else if (actionType === 'DEEP_LINK') {
+    const url = deepLinkUrl && deepLinkUrl.length > 5 ? deepLinkUrl : 'https://www.google.com/search?q=' + encodeURIComponent(vendorClean + ' app');
     window.open(url, '_blank');
-    appendMessage('bot', `🚀 Launching **${name}** native app intent (\`${url.substring(0, 45)}...\`).`, new Date(), null);
+    appendMessage('bot', `🚀 Launching **${vendorClean}** native app intent (\`${url.substring(0, 45)}...\`).`, new Date(), null);
   } else {
     openCheckout(name, price);
   }
@@ -452,8 +457,10 @@ function appendMessage(role, content, time, services) {
     services.forEach(s => {
       const card = document.createElement('div');
       card.className = 'svc-card';
-      const actionType = s.actionType || s.action_type || (['Zomato','Swiggy','Uber','Ola'].includes(s.name) ? 'DIRECT_API' : 'DEEP_LINK');
-      const btnText = actionType === 'DEEP_LINK' ? `Launch ${s.name} ↗` : `Select ${s.name}`;
+      const vendorClean = (s.name || '').split('—')[0].trim();
+      const isApiSupported = ['Zomato','Swiggy','Uber','Ola','BigBasket','Amazon','UberEats','DoorDash'].some(v => v.toLowerCase() === vendorClean.toLowerCase());
+      const actionType = isApiSupported ? 'DIRECT_API' : (s.actionType || s.action_type || 'DEEP_LINK');
+      const btnText = actionType === 'DEEP_LINK' ? `Launch ${vendorClean} ↗` : `Order via API`;
       const btnStyle = actionType === 'DEEP_LINK' ? 'background: linear-gradient(135deg, #0ea5e9, #0284c7);' : '';
       
       card.innerHTML = `
