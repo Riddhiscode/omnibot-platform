@@ -170,6 +170,22 @@ textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(9
   </div>
 
   <div class="sidebar">
+    <div class="sidebar-title">🔗 Connected Accounts</div>
+    <div class="service-list" style="margin-bottom:1rem;">
+      <div class="service-item" id="account-Swiggy">
+        <div class="dot" style="background:#fc8019"></div>Swiggy
+        <button onclick="startSwiggyOAuth()" style="margin-left:auto; padding:0.25rem 0.5rem; font-size:0.7rem; border-radius:6px; border:none; background:var(--accent); color:white; font-weight:600; cursor:pointer;">Link OAuth ⚡</button>
+      </div>
+      <div class="service-item" id="account-Uber">
+        <div class="dot" style="background:#fff"></div>Uber
+        <span class="service-status" style="margin-left:auto; font-size:0.7rem; color:var(--text-muted);">Pre-Linked ●</span>
+      </div>
+      <div class="service-item" id="account-Zomato">
+        <div class="dot" style="background:#e23744"></div>Zomato
+        <span class="service-status" style="margin-left:auto; font-size:0.7rem; color:var(--text-muted);">Pre-Linked ●</span>
+      </div>
+    </div>
+
     <div class="sidebar-title">🍔 Food <span class="count">4</span></div>
     <div class="service-list">
       <div class="service-item" onclick="quickSend('Order from Zomato')"><div class="dot" style="background:#e23744"></div>Zomato<div class="service-status">●</div></div>
@@ -291,6 +307,30 @@ function logout() {
   localStorage.removeItem('omnibot_token');
   localStorage.removeItem('omnibot_user');
   window.location.href = '/login.html';
+}
+
+async function startSwiggyOAuth() {
+  try {
+    const res = await fetch('/v1/oauth/swiggy/start', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.authUrl) {
+      window.location.href = data.authUrl;
+    } else {
+      alert('Unable to start OAuth authorization flow.');
+    }
+  } catch (e) {
+    alert('Failed to connect to Swiggy OAuth: ' + e.message);
+  }
+}
+
+// Check URL params for OAuth callback return
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('connected') === 'Swiggy') {
+  setTimeout(() => {
+    appendMessage('bot', '🎉 **Swiggy Account Linked Successfully!** You can now place, track, and manage Swiggy orders via official OAuth 2.0 PKCE access tokens.', new Date(), null);
+  }, 500);
 }
 
 function autoResize(el) {
