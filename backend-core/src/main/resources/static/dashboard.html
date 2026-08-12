@@ -311,7 +311,7 @@ function logout() {
 
 async function startSwiggyOAuth() {
   try {
-    const res = await fetch('/v1/oauth/swiggy/start', {
+    const res = await fetch('/api/v1/oauth/swiggy/start', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const data = await res.json();

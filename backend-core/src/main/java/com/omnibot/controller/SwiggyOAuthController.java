@@ -27,8 +27,8 @@ import java.util.Optional;
  * Swiggy OAuth 2.0 PKCE Link Controller.
  */
 @RestController
-@RequestMapping("/v1/oauth/swiggy")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost:8080"})
+@RequestMapping({"/v1/oauth/swiggy", "/api/v1/oauth/swiggy"})
+@CrossOrigin(originPatterns = "*", allowedHeaders = "*")
 public class SwiggyOAuthController {
 
     private static final Logger log = LoggerFactory.getLogger(SwiggyOAuthController.class);
@@ -66,7 +66,7 @@ public class SwiggyOAuthController {
                 ? vendorProperties.getSwiggy().getApiKey()
                 : "swiggy-omnibot-client-id";
 
-        String redirectUri = URLEncoder.encode("http://localhost:8080/v1/oauth/swiggy/callback", StandardCharsets.UTF_8);
+        String redirectUri = URLEncoder.encode("http://localhost:8080/api/v1/oauth/swiggy/callback", StandardCharsets.UTF_8);
 
         String authUrl = String.format(
             "https://developers.swiggy.com/oauth/authorize?response_type=code&client_id=%s&redirect_uri=%s&state=%s&code_challenge=%s&code_challenge_method=S256&scope=orders.read%%20orders.create",
