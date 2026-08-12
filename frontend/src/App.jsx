@@ -47,6 +47,7 @@ function App() {
       {/* Top Fixed Header */}
       <Header 
         user={auth.user} 
+        token={auth.token}
         onLogout={handleLogout} 
         onQuickSend={handleQuickSend} 
         activeTab={activeTab}

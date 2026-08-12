@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
-import { User, LogOut, ChevronDown, BarChart2, History, CreditCard, Settings } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, LogOut, ChevronDown, BarChart2, History, CreditCard, Settings, Star } from 'lucide-react';
 
-const Header = ({ user, onLogout, onQuickSend, activeTab, setActiveTab }) => {
+const Header = ({ user, onLogout, onQuickSend, activeTab, setActiveTab, token }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [omniPoints, setOmniPoints] = useState(null);
 
   const userName = user?.name || user?.email?.split('@')[0] || 'angel';
   const initial = userName.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    if (!token) return;
+    fetch('http://localhost:8080/api/v1/rewards/balance', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => { if (data) setOmniPoints(data.points); })
+      .catch(() => {});
+  }, [token]);
 
   const quickActions = [
     { label: '🍕 Order Food', prompt: 'I want to use Zomato for order food' },
@@ -43,6 +54,15 @@ const Header = ({ user, onLogout, onQuickSend, activeTab, setActiveTab }) => {
       {/* Right User Profile */}
       <div className="relative">
         <div className="flex items-center gap-3">
+          {omniPoints !== null && (
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-medium"
+              title="OmniPoints — earn on any order, redeem on any vendor"
+            >
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              <span>{omniPoints.toLocaleString()} OmniPoints</span>
+            </div>
+          )}
           <button 
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/5 transition-all text-xs"
