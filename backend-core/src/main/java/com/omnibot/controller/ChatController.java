@@ -22,8 +22,8 @@ import java.util.List;
  */
 @Controller
 @ResponseBody
-@RequestMapping("/v1/chat")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://localhost:8080", "null"})
+@RequestMapping({"/v1/chat", "/api/v1/chat"})
+@CrossOrigin(originPatterns = "*", allowedHeaders = "*")
 public class ChatController {
 
     private final ChatService chatService;
